@@ -1,0 +1,116 @@
+include:
+  - 'https://gitlab-templates.ddbuild.io/slack-notifier/v1/template.yml'
+
+# SETUP
+
+variables:
+  CURRENT_CI_IMAGE: "1"
+  CI_IMAGE_DOCKER: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/dd-bridge-android:$CURRENT_CI_IMAGE
+  GIT_DEPTH: 5
+
+  DD_AGENT_HOST: "$BUILDENV_HOST_IP"
+  DD_SERVICE: "dd-bridge-android"
+  DD_ENV_TESTS: "ci"
+  DD_INTEGRATION_JUNIT_5_ENABLED: "true"
+
+stages:
+  - ci-image
+  - analysis
+  - test
+  - publish
+  - notify
+
+# CI IMAGE
+
+ci-image:
+  stage: ci-image
+  when: manual
+  except: [ tags, schedules ]
+  tags: [ "runner:docker", "size:large" ]
+  image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.03.1
+  script:
+    - docker build --tag $CI_IMAGE_DOCKER -f Dockerfile.gitlab .
+    - docker push $CI_IMAGE_DOCKER
+
+# STATIC ANALYSIS
+
+analysis:ktlint:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: analysis
+  timeout: 30m
+  script:
+    - git fetch --depth=1 origin main
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :ktlintCheckAll --stacktrace --no-daemon
+
+analysis:android-lint:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: analysis
+  timeout: 30m
+  script:
+    - git fetch --depth=1 origin main
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :lintCheckAll --stacktrace --no-daemon
+
+analysis:detekt:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: analysis
+  timeout: 30m
+  script:
+    - git fetch --depth=1 origin main
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :detektAll --stacktrace --no-daemon
+
+analysis:licenses:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: analysis
+  timeout: 30m
+  script:
+    - git fetch --depth=1 origin main
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :dd-bridge-android:checkThirdPartyLicences
+
+analysis:api-surface:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: analysis
+  timeout: 30m
+  script:
+    - git fetch --depth=1 origin main
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :dd-bridge-android:checkApiSurfaceChanges
+
+# TESTS
+
+test:debug:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: test
+  timeout: 1h
+  script:
+    - git fetch --depth=1 origin main
+    - rm -rf ~/.gradle/daemon/
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :unitTestDebug --stacktrace --no-daemon
+
+test:release:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: test
+  timeout: 1h
+  script:
+    - git fetch --depth=1 origin main
+    - rm -rf ~/.gradle/daemon/
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :unitTestRelease --stacktrace --no-daemon
+
+test:tools:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: test
+  timeout: 1h
+  script:
+    - git fetch --depth=1 origin main
+    - rm -rf ~/.gradle/daemon/
+    - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :unitTestTools --stacktrace --no-daemon
+
+# PUBLISH ARTIFACTS ON BINTRAY
+
+# SLACK NOTIFICATIONS
