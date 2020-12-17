@@ -17,6 +17,7 @@ Include any error message or stack trace if available.
 **Describe what you expected:**
 
 **Additional context**
+ - What framework are you calling the bridge from (React Native, …)?
  - Android OS version:
  - Device Model:
  - Datadog SDK version:
