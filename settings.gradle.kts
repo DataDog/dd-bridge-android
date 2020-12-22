@@ -4,4 +4,4 @@
  * Copyright 2016-Present Datadog, Inc.
  */
 
-include (":dd-bridge-android")
+include(":dd-bridge-android")
