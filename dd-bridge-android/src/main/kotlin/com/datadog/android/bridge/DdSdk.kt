@@ -6,6 +6,8 @@
 
 package com.datadog.android.bridge
 
+import android.content.Context
+
 /**
  * The entry point to initialize Datadog's features.
  */
@@ -15,4 +17,5 @@ interface DdSdk {
      * Initializes Datadog's features.
      */
     fun initialize(configuration: DdSdkConfiguration): Unit
+
 }

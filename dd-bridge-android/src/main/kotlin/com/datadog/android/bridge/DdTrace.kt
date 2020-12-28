@@ -6,6 +6,8 @@
 
 package com.datadog.android.bridge
 
+import android.content.Context
+
 /**
  * The entry point to use Datadog's Trace feature.
  */
@@ -20,4 +22,5 @@ interface DdTrace {
      * Finish a started span.
      */
     fun finishSpan(spanId: String, timestamp: Long, context: Map<String, Any?>): Unit
+
 }
