@@ -100,8 +100,7 @@ internal class BridgeRumTest {
 
     @Test
     fun `M call stopView W stopView()`(
-        @StringForgery key: String,
-        @StringForgery name: String
+        @StringForgery key: String
     ) {
         // Given
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
@@ -174,10 +173,7 @@ internal class BridgeRumTest {
     }
 
     @Test
-    fun `M call stopAction W stopAction()`(
-        @StringForgery key: String,
-        @StringForgery name: String
-    ) {
+    fun `M call stopAction W stopAction()`() {
         // Given
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 

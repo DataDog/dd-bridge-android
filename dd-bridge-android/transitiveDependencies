@@ -29,7 +29,7 @@ androidx.savedstate:savedstate:1.0.0                            :    9 Kb
 androidx.versionedparcelable:versionedparcelable:1.1.0          :   30 Kb
 androidx.viewpager:viewpager:1.0.0                              :   52 Kb
 androidx.work:work-runtime:2.4.0                                :  396 Kb
-com.datadoghq:dd-sdk-android:1.7.0-alpha2                       :  738 Kb
+com.datadoghq:dd-sdk-android:1.8.0-alpha1                       :  794 Kb
 com.google.code.gson:gson:2.8.6                                 :  234 Kb
 com.google.guava:listenablefuture:1.0                           :    3 Kb
 com.lyft.kronos:kronos-android:0.0.1-alpha10                    :    5 Kb

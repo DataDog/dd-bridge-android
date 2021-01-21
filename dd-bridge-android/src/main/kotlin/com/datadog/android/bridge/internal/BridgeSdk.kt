@@ -9,9 +9,11 @@ package com.datadog.android.bridge.internal
 import android.content.Context
 import android.util.Log
 import com.datadog.android.Datadog as DatadogSDK
-import com.datadog.android.DatadogConfig
 import com.datadog.android.bridge.DdSdk
 import com.datadog.android.bridge.DdSdkConfiguration
+import com.datadog.android.core.configuration.Configuration
+import com.datadog.android.core.configuration.Credentials
+import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.GlobalRum
 import com.datadog.android.rum.RumMonitor
 
@@ -20,18 +22,26 @@ internal class BridgeSdk(context: Context) : DdSdk {
     internal val appContext: Context = context.applicationContext
 
     override fun initialize(configuration: DdSdkConfiguration) {
-        val configBuilder = DatadogConfig.Builder(
+        val credentials = Credentials(
             clientToken = configuration.clientToken,
             envName = configuration.env,
-            applicationId = configuration.applicationId ?: NULL_UUID
+            rumApplicationId = configuration.applicationId,
+            variant = ""
+        )
+        val configBuilder = Configuration.Builder(
+            logsEnabled = true,
+            tracesEnabled = true,
+            crashReportsEnabled = true,
+            rumEnabled = true
         )
 
         DatadogSDK.setVerbosity(Log.VERBOSE)
-        DatadogSDK.initialize(appContext, configBuilder.build())
+        DatadogSDK.initialize(
+            appContext,
+            credentials,
+            configBuilder.build(),
+            TrackingConsent.GRANTED
+        )
         GlobalRum.registerIfAbsent(RumMonitor.Builder().build())
-    }
-
-    companion object {
-        internal const val NULL_UUID = "00000000-0000-0000-0000-000000000000"
     }
 }

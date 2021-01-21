@@ -6,8 +6,6 @@
 
 package com.datadog.android.bridge
 
-import android.content.Context
-
 /**
  * The entry point to use Datadog's RUM feature.
  */
@@ -16,41 +14,58 @@ interface DdRum {
     /**
      * Start tracking a RUM View.
      */
-    fun startView(key: String, name: String, timestamp: Long, context: Map<String, Any?>): Unit
+    fun startView(key: String, name: String, timestampMs: Long, context: Map<String, Any?>): Unit
 
     /**
      * Stop tracking a RUM View.
      */
-    fun stopView(key: String, timestamp: Long, context: Map<String, Any?>): Unit
+    fun stopView(key: String, timestampMs: Long, context: Map<String, Any?>): Unit
 
     /**
      * Start tracking a RUM Action.
      */
-    fun startAction(type: String, name: String, timestamp: Long, context: Map<String, Any?>): Unit
+    fun startAction(type: String, name: String, timestampMs: Long, context: Map<String, Any?>): Unit
 
     /**
      * Stop tracking the ongoing RUM Action.
      */
-    fun stopAction(timestamp: Long, context: Map<String, Any?>): Unit
+    fun stopAction(timestampMs: Long, context: Map<String, Any?>): Unit
 
     /**
      * Add a RUM Action.
      */
-    fun addAction(type: String, name: String, timestamp: Long, context: Map<String, Any?>): Unit
+    fun addAction(type: String, name: String, timestampMs: Long, context: Map<String, Any?>): Unit
 
     /**
      * Start tracking a RUM Resource.
      */
-    fun startResource(key: String, method: String, url: String, timestamp: Long, context: Map<String, Any?>): Unit
+    fun startResource(
+        key: String,
+        method: String,
+        url: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ): Unit
 
     /**
      * Stop tracking a RUM Resource.
      */
-    fun stopResource(key: String, statusCode: Long, kind: String, timestamp: Long, context: Map<String, Any?>): Unit
+    fun stopResource(
+        key: String,
+        statusCode: Long,
+        kind: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ): Unit
 
     /**
      * Add a RUM Error.
      */
-    fun addError(message: String, source: String, stacktrace: String, timestamp: Long, context: Map<String, Any?>): Unit
-
+    fun addError(
+        message: String,
+        source: String,
+        stacktrace: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ): Unit
 }
