@@ -32,6 +32,7 @@ object DdBridge {
      */
 
     @JvmStatic
+    @Suppress("UNUSED_PARAMETER")
     fun getDdLogs(context: Context): DdLogs {
         return BridgeLogs()
     }
@@ -41,6 +42,7 @@ object DdBridge {
      * @return an implementation of [DdRum]
      */
     @JvmStatic
+    @Suppress("UNUSED_PARAMETER")
     fun getDdRum(context: Context): DdRum {
         return BridgeRum()
     }
@@ -49,6 +51,7 @@ object DdBridge {
      * @param context the current application [Context]
      * @return an implementation of [DdTrace]
      */
+    @Suppress("UNUSED_PARAMETER")
     @JvmStatic
     fun getDdTrace(context: Context): DdTrace {
         return BridgeTrace()

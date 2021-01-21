@@ -6,8 +6,6 @@
 
 package com.datadog.android.bridge
 
-import android.content.Context
-
 /**
  * The entry point to use Datadog's RUM feature.
  */
@@ -41,16 +39,33 @@ interface DdRum {
     /**
      * Start tracking a RUM Resource.
      */
-    fun startResource(key: String, method: String, url: String, timestampMs: Long, context: Map<String, Any?>): Unit
+    fun startResource(
+        key: String,
+        method: String,
+        url: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ): Unit
 
     /**
      * Stop tracking a RUM Resource.
      */
-    fun stopResource(key: String, statusCode: Long, kind: String, timestampMs: Long, context: Map<String, Any?>): Unit
+    fun stopResource(
+        key: String,
+        statusCode: Long,
+        kind: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ): Unit
 
     /**
      * Add a RUM Error.
      */
-    fun addError(message: String, source: String, stacktrace: String, timestampMs: Long, context: Map<String, Any?>): Unit
-
+    fun addError(
+        message: String,
+        source: String,
+        stacktrace: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ): Unit
 }
