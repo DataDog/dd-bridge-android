@@ -112,7 +112,7 @@ publish:release:
   timeout: 30m
   script:
     - aws ssm get-parameter --region us-east-1 --name ci.dd-bridge-android.gradle-properties --with-decryption --query "Parameter.Value" --out text >> ./gradle.properties
-    - git fetch --depth=1 origin master
+    - git fetch --depth=1 origin main
     - ./gradlew :dd-bridge-android:bintrayUpload --stacktrace --no-daemon
 
 # SLACK NOTIFICATIONS
