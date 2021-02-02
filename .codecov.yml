@@ -2,13 +2,13 @@
 codecov:
   notify:
     require_ci_to_pass: no
-    wait_for_ci: no
+    wait_for_ci: false
 
 comment:
   behavior: default
   layout: header, diff, tree
   require_changes: false
-  require_base: no
+  require_base: false
 
 coverage:
   precision: 2
