@@ -36,7 +36,11 @@ internal class BridgeSdk(
     }
 
     override fun setUser(user: Map<String, Any?>) {
-        TODO("Not yet implemented")
+        val extraInfo = user.toMutableMap()
+        val id = extraInfo.remove("id")?.toString()
+        val name = extraInfo.remove("name")?.toString()
+        val email = extraInfo.remove("email")?.toString()
+        datadog.setUserInfo(id, name, email, extraInfo)
     }
 
     override fun setAttributes(attributes: Map<String, Any?>) {

@@ -20,4 +20,13 @@ internal class DatadogSDKWrapper : DatadogWrapper {
     ) {
         Datadog.initialize(context, credentials, configuration, consent)
     }
+
+    override fun setUserInfo(
+        id: String?,
+        name: String?,
+        email: String?,
+        extraInfo: Map<String, Any?>
+    ) {
+        Datadog.setUserInfo(id, name, email, extraInfo)
+    }
 }

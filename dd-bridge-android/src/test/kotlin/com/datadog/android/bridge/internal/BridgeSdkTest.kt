@@ -14,10 +14,15 @@ import com.datadog.tools.unit.forge.BaseConfigurator
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.same
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import fr.xgouchet.elmyr.annotation.AdvancedForgery
 import fr.xgouchet.elmyr.annotation.Forgery
+import fr.xgouchet.elmyr.annotation.MapForgery
+import fr.xgouchet.elmyr.annotation.StringForgery
+import fr.xgouchet.elmyr.annotation.StringForgeryType
 import fr.xgouchet.elmyr.junit5.ForgeConfiguration
 import fr.xgouchet.elmyr.junit5.ForgeExtension
 import org.assertj.core.api.Assertions.assertThat
@@ -197,5 +202,163 @@ internal class BridgeSdkTest {
         assertThat(credentials.envName).isEqualTo(configuration.env)
         assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
         assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 set native user info 𝕎 setUser()`(
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) extraInfo: Map<String, String>
+    ) {
+        // When
+        testedBridgeSdk.setUser(extraInfo)
+
+        // Then
+        argumentCaptor<Map<String, Any?>> {
+            verify(mockDatadog)
+                .setUserInfo(
+                    isNull(),
+                    isNull(),
+                    isNull(),
+                    capture()
+                )
+
+            assertThat(firstValue)
+                .containsAllEntriesOf(extraInfo)
+                .hasSize(extraInfo.size)
+        }
+    }
+
+    @Test
+    fun `𝕄 set native user info 𝕎 setUser() {with id}`(
+        @StringForgery id: String,
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) extraInfo: Map<String, String>
+    ) {
+        // Given
+        val user = extraInfo.toMutableMap().also {
+            it.put("id", id)
+        }
+
+        // When
+        testedBridgeSdk.setUser(user)
+
+        // Then
+        argumentCaptor<Map<String, Any?>> {
+            verify(mockDatadog)
+                .setUserInfo(
+                    eq(id),
+                    isNull(),
+                    isNull(),
+                    capture()
+                )
+
+            assertThat(firstValue)
+                .containsAllEntriesOf(extraInfo)
+                .hasSize(extraInfo.size)
+        }
+    }
+
+    @Test
+    fun `𝕄 set native user info 𝕎 setUser() {with name}`(
+        @StringForgery name: String,
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) extraInfo: Map<String, String>
+    ) {
+        // Given
+        val user = extraInfo.toMutableMap().also {
+            it.put("name", name)
+        }
+
+        // When
+        testedBridgeSdk.setUser(user)
+
+        // Then
+        argumentCaptor<Map<String, Any?>> {
+            verify(mockDatadog)
+                .setUserInfo(
+                    isNull(),
+                    eq(name),
+                    isNull(),
+                    capture()
+                )
+
+            assertThat(firstValue)
+                .containsAllEntriesOf(extraInfo)
+                .hasSize(extraInfo.size)
+        }
+    }
+
+    @Test
+    fun `𝕄 set native user info 𝕎 setUser() {with email}`(
+        @StringForgery(regex = "\\w+@\\w+\\.[a-z]{3}") email: String,
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) extraInfo: Map<String, String>
+    ) {
+        // Given
+        val user = extraInfo.toMutableMap().also {
+            it.put("email", email)
+        }
+
+        // When
+        testedBridgeSdk.setUser(user)
+
+        // Then
+        argumentCaptor<Map<String, Any?>> {
+            verify(mockDatadog)
+                .setUserInfo(
+                    isNull(),
+                    isNull(),
+                    eq(email),
+                    capture()
+                )
+
+            assertThat(firstValue)
+                .containsAllEntriesOf(extraInfo)
+                .hasSize(extraInfo.size)
+        }
+    }
+
+    @Test
+    fun `𝕄 set native user info 𝕎 setUser() {with id, name and email}`(
+        @StringForgery id: String,
+        @StringForgery name: String,
+        @StringForgery(regex = "\\w+@\\w+\\.[a-z]{3}") email: String,
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) extraInfo: Map<String, String>
+    ) {
+        // Given
+        val user = extraInfo.toMutableMap().also {
+            it.put("id", id)
+            it.put("name", name)
+            it.put("email", email)
+        }
+
+        // When
+        testedBridgeSdk.setUser(user)
+
+        // Then
+        argumentCaptor<Map<String, Any?>> {
+            verify(mockDatadog)
+                .setUserInfo(
+                    eq(id),
+                    eq(name),
+                    eq(email),
+                    capture()
+                )
+
+            assertThat(firstValue)
+                .containsAllEntriesOf(extraInfo)
+                .hasSize(extraInfo.size)
+        }
     }
 }

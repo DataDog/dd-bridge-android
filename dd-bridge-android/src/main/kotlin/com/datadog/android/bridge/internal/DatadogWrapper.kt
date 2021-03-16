@@ -15,4 +15,11 @@ internal interface DatadogWrapper {
         configuration: Configuration,
         consent: TrackingConsent
     )
+
+    fun setUserInfo(
+        id: String?,
+        name: String?,
+        email: String?,
+        extraInfo: Map<String, Any?>
+    )
 }
