@@ -11,6 +11,7 @@ import com.datadog.android.bridge.internal.BridgeLogs
 import com.datadog.android.bridge.internal.BridgeRum
 import com.datadog.android.bridge.internal.BridgeSdk
 import com.datadog.android.bridge.internal.BridgeTrace
+import com.datadog.android.bridge.internal.DatadogSDKWrapper
 
 /**
  * The main entry point for Bridge clients to access Bridge implementation classes.
@@ -23,7 +24,7 @@ object DdBridge {
      */
     @JvmStatic
     fun getDdSdk(context: Context): DdSdk {
-        return BridgeSdk(context)
+        return BridgeSdk(context, DatadogSDKWrapper())
     }
 
     /**

@@ -6,8 +6,6 @@
 
 package com.datadog.android.bridge
 
-import android.content.Context
-
 /**
  * The entry point to initialize Datadog's features.
  */
@@ -27,5 +25,4 @@ interface DdSdk {
      * Set the user information.
      */
     fun setUser(user: Map<String, Any?>): Unit
-
 }
