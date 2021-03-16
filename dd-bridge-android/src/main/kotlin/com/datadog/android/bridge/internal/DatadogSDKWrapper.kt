@@ -5,6 +5,8 @@ import com.datadog.android.Datadog
 import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.privacy.TrackingConsent
+import com.datadog.android.rum.GlobalRum
+import com.datadog.android.rum.RumMonitor
 
 internal class DatadogSDKWrapper : DatadogWrapper {
 
@@ -28,5 +30,15 @@ internal class DatadogSDKWrapper : DatadogWrapper {
         extraInfo: Map<String, Any?>
     ) {
         Datadog.setUserInfo(id, name, email, extraInfo)
+    }
+
+    override fun registerRumMonitor(rumMonitor: RumMonitor) {
+        GlobalRum.registerIfAbsent(rumMonitor)
+    }
+
+    override fun addRumGlobalAttributes(attributes: Map<String, Any?>) {
+        attributes.forEach {
+            GlobalRum.addAttribute(it.key, it.value)
+        }
     }
 }

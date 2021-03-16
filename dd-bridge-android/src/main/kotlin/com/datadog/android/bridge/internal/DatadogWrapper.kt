@@ -4,6 +4,7 @@ import android.content.Context
 import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.privacy.TrackingConsent
+import com.datadog.android.rum.RumMonitor
 
 internal interface DatadogWrapper {
 
@@ -22,4 +23,8 @@ internal interface DatadogWrapper {
         email: String?,
         extraInfo: Map<String, Any?>
     )
+
+    fun registerRumMonitor(rumMonitor: RumMonitor)
+
+    fun addRumGlobalAttributes(attributes: Map<String, Any?>)
 }

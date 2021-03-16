@@ -13,7 +13,6 @@ import com.datadog.android.bridge.DdSdkConfiguration
 import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.privacy.TrackingConsent
-import com.datadog.android.rum.GlobalRum
 import com.datadog.android.rum.RumMonitor
 
 internal class BridgeSdk(
@@ -32,7 +31,7 @@ internal class BridgeSdk(
         datadog.setVerbosity(Log.VERBOSE)
         datadog.initialize(appContext, credentials, nativeConfiguration, TrackingConsent.GRANTED)
 
-        GlobalRum.registerIfAbsent(RumMonitor.Builder().build())
+        datadog.registerRumMonitor(RumMonitor.Builder().build())
     }
 
     override fun setUser(user: Map<String, Any?>) {
@@ -44,7 +43,7 @@ internal class BridgeSdk(
     }
 
     override fun setAttributes(attributes: Map<String, Any?>) {
-        TODO("Not yet implemented")
+        datadog.addRumGlobalAttributes(attributes)
     }
 
     // endregion

@@ -11,9 +11,11 @@ import com.datadog.android.plugin.DatadogPlugin
 import com.datadog.android.privacy.TrackingConsent
 import com.datadog.tools.unit.GenericAssert.Companion.assertThat
 import com.datadog.tools.unit.forge.BaseConfigurator
+import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.inOrder
 import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.same
 import com.nhaarman.mockitokotlin2.verify
@@ -71,12 +73,15 @@ internal class BridgeSdkTest {
         testedBridgeSdk.initialize(bridgeConfiguration)
 
         // Then
-        verify(mockDatadog).initialize(
-            same(mockContext),
-            credentialCaptor.capture(),
-            configCaptor.capture(),
-            eq(TrackingConsent.GRANTED)
-        )
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.GRANTED)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
         assertThat(configCaptor.firstValue)
             .hasField("coreConfig") {
                 it.hasFieldEqualTo("needsClearTextHttp", false)
@@ -122,12 +127,15 @@ internal class BridgeSdkTest {
         testedBridgeSdk.initialize(bridgeConfiguration)
 
         // Then
-        verify(mockDatadog).initialize(
-            same(mockContext),
-            credentialCaptor.capture(),
-            configCaptor.capture(),
-            eq(TrackingConsent.GRANTED)
-        )
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.GRANTED)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
         assertThat(configCaptor.firstValue)
             .hasField("coreConfig") {
                 it.hasFieldEqualTo("needsClearTextHttp", false)
@@ -170,12 +178,15 @@ internal class BridgeSdkTest {
         testedBridgeSdk.initialize(bridgeConfiguration)
 
         // Then
-        verify(mockDatadog).initialize(
-            same(mockContext),
-            credentialCaptor.capture(),
-            configCaptor.capture(),
-            eq(TrackingConsent.GRANTED)
-        )
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.GRANTED)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
         assertThat(configCaptor.firstValue)
             .hasField("coreConfig") {
                 it.hasFieldEqualTo("needsClearTextHttp", false)
@@ -360,5 +371,21 @@ internal class BridgeSdkTest {
                 .containsAllEntriesOf(extraInfo)
                 .hasSize(extraInfo.size)
         }
+    }
+
+    @Test
+    fun `𝕄 set RUM attributes 𝕎 setAttributes`(
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) customAttributes: Map<String, String>
+    ) {
+        // Given
+
+        // When
+        testedBridgeSdk.setAttributes(customAttributes)
+
+        // Then
+        verify(mockDatadog).addRumGlobalAttributes(customAttributes)
     }
 }
