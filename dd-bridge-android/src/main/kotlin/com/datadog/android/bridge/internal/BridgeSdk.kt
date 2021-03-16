@@ -18,7 +18,7 @@ import com.datadog.android.rum.RumMonitor
 
 internal class BridgeSdk(
     context: Context,
-    private val datadog : DatadogWrapper
+    private val datadog: DatadogWrapper
 ) : DdSdk {
 
     internal val appContext: Context = context.applicationContext
@@ -51,7 +51,7 @@ internal class BridgeSdk(
         return Configuration.Builder(
             logsEnabled = true,
             tracesEnabled = true,
-            crashReportsEnabled = true,
+            crashReportsEnabled = configuration.nativeCrashReportEnabled ?: false,
             rumEnabled = true
         ).build()
     }

@@ -11,8 +11,8 @@ class GenericAssert(actual: Any) :
         nestedAssert(GenericAssert(field))
         return this
     }
-    fun <F> hasFieldEqualTo(name: String, expected : F): GenericAssert {
-        val field: Any = actual.getFieldValue(name)
+    fun <F> hasFieldEqualTo(name: String, expected: F): GenericAssert {
+        val field: Any? = actual.getFieldValue(name)
         Assertions.assertThat(field).isEqualTo(expected)
         return this
     }

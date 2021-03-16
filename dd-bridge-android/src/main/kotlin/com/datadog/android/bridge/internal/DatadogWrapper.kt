@@ -15,5 +15,4 @@ internal interface DatadogWrapper {
         configuration: Configuration,
         consent: TrackingConsent
     )
-
 }
