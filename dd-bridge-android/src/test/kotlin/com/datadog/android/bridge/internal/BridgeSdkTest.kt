@@ -60,6 +60,7 @@ internal class BridgeSdkTest {
         val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = true)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
 
         // When
         testedBridgeSdk.initialize(bridgeConfiguration)
@@ -93,7 +94,7 @@ internal class BridgeSdkTest {
             .hasField("rumConfig") {
                 it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", 100f)
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
             }
         val credentials = credentialCaptor.firstValue
         assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
@@ -110,6 +111,7 @@ internal class BridgeSdkTest {
         val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = false)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
 
         // When
         testedBridgeSdk.initialize(bridgeConfiguration)
@@ -140,7 +142,7 @@ internal class BridgeSdkTest {
             .hasField("rumConfig") {
                 it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", 100f)
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
             }
         val credentials = credentialCaptor.firstValue
         assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
@@ -157,6 +159,7 @@ internal class BridgeSdkTest {
         val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = null)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
 
         // When
         testedBridgeSdk.initialize(bridgeConfiguration)
@@ -187,7 +190,7 @@ internal class BridgeSdkTest {
             .hasField("rumConfig") {
                 it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", 100f)
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
             }
         val credentials = credentialCaptor.firstValue
         assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)

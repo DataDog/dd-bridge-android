@@ -53,7 +53,9 @@ internal class BridgeSdk(
             tracesEnabled = true,
             crashReportsEnabled = configuration.nativeCrashReportEnabled ?: false,
             rumEnabled = true
-        ).build()
+        )
+            .sampleRumSessions(configuration.sampleRate?.toFloat() ?: 100f)
+            .build()
     }
 
     private fun buildCredentials(configuration: DdSdkConfiguration): Credentials {
