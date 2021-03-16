@@ -6,6 +6,8 @@
 
 package com.datadog.android.bridge
 
+import android.content.Context
+
 /**
  * The entry point to use Datadog's RUM feature.
  */
@@ -68,4 +70,5 @@ interface DdRum {
         timestampMs: Long,
         context: Map<String, Any?>
     ): Unit
+
 }

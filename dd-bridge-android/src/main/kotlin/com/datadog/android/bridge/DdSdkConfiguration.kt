@@ -11,9 +11,15 @@ package com.datadog.android.bridge
  * @param clientToken A valid Datadog client token.
  * @param env The application’s environment, for example: prod, pre-prod, staging, etc.
  * @param applicationId The RUM application ID.
+ * @param nativeCrashReportEnabled Whether the SDK should track native (pure iOS or pure Android) crashes (default is false).
+ * @param sampleRate The sample rate (between 0 and 100) of RUM sessions kept.
+ * @param additionalConfig Additional configuration parameters.
  */
 data class DdSdkConfiguration(
     val clientToken: String,
     val env: String,
-    val applicationId: String? = null
+    val applicationId: String? = null,
+    val nativeCrashReportEnabled: Boolean? = null,
+    val sampleRate: Double? = null,
+    val additionalConfig: Map<String, Any?>? = null
 )
