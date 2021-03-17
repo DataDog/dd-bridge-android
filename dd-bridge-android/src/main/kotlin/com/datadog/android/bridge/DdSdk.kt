@@ -15,4 +15,14 @@ interface DdSdk {
      * Initializes Datadog's features.
      */
     fun initialize(configuration: DdSdkConfiguration): Unit
+
+    /**
+     * Sets the global context (set of attributes) attached with all future Logs, Spans and RUM events.
+     */
+    fun setAttributes(attributes: Map<String, Any?>): Unit
+
+    /**
+     * Set the user information.
+     */
+    fun setUser(user: Map<String, Any?>): Unit
 }

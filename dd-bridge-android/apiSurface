@@ -19,8 +19,10 @@ interface com.datadog.android.bridge.DdRum
   fun addError(String, String, String, Long, Map<String, Any?>): Unit
 interface com.datadog.android.bridge.DdSdk
   fun initialize(DdSdkConfiguration): Unit
+  fun setAttributes(Map<String, Any?>): Unit
+  fun setUser(Map<String, Any?>): Unit
 class com.datadog.android.bridge.DdSdkConfiguration
-  constructor(String, String, String? = null)
+  constructor(String, String, String? = null, Boolean? = null, Double? = null, Map<String, Any?>? = null)
 interface com.datadog.android.bridge.DdTrace
   fun startSpan(String, Long, Map<String, Any?>): String
   fun finishSpan(String, Long, Map<String, Any?>): Unit
