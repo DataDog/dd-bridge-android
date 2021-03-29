@@ -81,6 +81,7 @@ internal class BridgeSdkTest {
                 eq(TrackingConsent.GRANTED)
             )
             verify(mockDatadog).registerRumMonitor(any())
+            verify(mockDatadog).addRumGlobalAttributes(bridgeConfiguration.additionalConfig!!)
         }
         assertThat(configCaptor.firstValue)
             .hasField("coreConfig") {
@@ -135,6 +136,7 @@ internal class BridgeSdkTest {
                 eq(TrackingConsent.GRANTED)
             )
             verify(mockDatadog).registerRumMonitor(any())
+            verify(mockDatadog).addRumGlobalAttributes(bridgeConfiguration.additionalConfig!!)
         }
         assertThat(configCaptor.firstValue)
             .hasField("coreConfig") {
@@ -186,6 +188,7 @@ internal class BridgeSdkTest {
                 eq(TrackingConsent.GRANTED)
             )
             verify(mockDatadog).registerRumMonitor(any())
+            verify(mockDatadog).addRumGlobalAttributes(bridgeConfiguration.additionalConfig!!)
         }
         assertThat(configCaptor.firstValue)
             .hasField("coreConfig") {
@@ -203,6 +206,57 @@ internal class BridgeSdkTest {
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
             }
             .hasFieldEqualTo("crashReportConfig", null)
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
+            }
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
+        assertThat(credentials.envName).isEqualTo(configuration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {additionalConfiguration is null}`(
+        @Forgery configuration: DdSdkConfiguration
+    ) {
+        // Given
+        val bridgeConfiguration = configuration.copy(additionalConfig = null)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.GRANTED)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+            verify(mockDatadog).addRumGlobalAttributes(eq(emptyMap()))
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
             .hasField("rumConfig") {
                 it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())

@@ -32,6 +32,7 @@ internal class BridgeSdk(
         datadog.initialize(appContext, credentials, nativeConfiguration, TrackingConsent.GRANTED)
 
         datadog.registerRumMonitor(RumMonitor.Builder().build())
+        datadog.addRumGlobalAttributes(configuration.additionalConfig ?: emptyMap())
     }
 
     override fun setUser(user: Map<String, Any?>) {
