@@ -57,6 +57,11 @@ internal class BridgeSdk(
             crashReportsEnabled = configuration.nativeCrashReportEnabled ?: false,
             rumEnabled = true
         )
+            .setAdditionalConfiguration(
+                configuration.additionalConfig
+                    ?.filterValues { it != null }
+                    ?.mapValues { it.value!! } ?: emptyMap()
+            )
         if (configuration.sampleRate != null) {
             configBuilder.sampleRumSessions(configuration.sampleRate.toFloat())
         }
@@ -67,8 +72,7 @@ internal class BridgeSdk(
         } else if (configuration.site.equals("GOV", ignoreCase = true)) {
             configBuilder.useGovEndpoints()
         }
-        return configBuilder
-            .build()
+        return configBuilder.build()
     }
 
     private fun buildCredentials(configuration: DdSdkConfiguration): Credentials {
