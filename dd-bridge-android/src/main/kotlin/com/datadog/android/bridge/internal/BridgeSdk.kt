@@ -51,13 +51,23 @@ internal class BridgeSdk(
     // region Internal
 
     private fun buildConfiguration(configuration: DdSdkConfiguration): Configuration {
-        return Configuration.Builder(
+        val configBuilder = Configuration.Builder(
             logsEnabled = true,
             tracesEnabled = true,
             crashReportsEnabled = configuration.nativeCrashReportEnabled ?: false,
             rumEnabled = true
         )
-            .sampleRumSessions(configuration.sampleRate?.toFloat() ?: 100f)
+        if (configuration.sampleRate != null) {
+            configBuilder.sampleRumSessions(configuration.sampleRate.toFloat())
+        }
+        if (configuration.site.equals("US", ignoreCase = true)) {
+            configBuilder.useUSEndpoints()
+        } else if (configuration.site.equals("EU", ignoreCase = true)) {
+            configBuilder.useEUEndpoints()
+        } else if (configuration.site.equals("GOV", ignoreCase = true)) {
+            configBuilder.useGovEndpoints()
+        }
+        return configBuilder
             .build()
     }
 
