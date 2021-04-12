@@ -37,7 +37,7 @@ object Dependencies {
         const val Unmock = "0.7.5"
 
         // Datadog
-        const val DatadogSdkVersion = "1.9.0-alpha1"
+        const val DatadogSdkVersion = "1.9.0-alpha2"
     }
 
     object Libraries {
