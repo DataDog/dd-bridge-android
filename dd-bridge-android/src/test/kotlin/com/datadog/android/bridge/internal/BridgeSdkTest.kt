@@ -235,7 +235,7 @@ internal class BridgeSdkTest {
         val bridgeConfiguration = configuration.copy(
             additionalConfig = null,
             nativeCrashReportEnabled = false,
-            site  = null
+            site = null
         )
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
