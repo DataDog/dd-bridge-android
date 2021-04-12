@@ -10,12 +10,12 @@ object Dependencies {
 
     object Versions {
         // Commons
-        const val Kotlin = "1.4.0"
+        const val Kotlin = "1.4.20"
         const val Gson = "2.8.6"
         const val OkHttp = "3.12.6"
 
         // Android
-        const val AndroidToolsPlugin = "4.0.1"
+        const val AndroidToolsPlugin = "4.1.2"
 
         // JUnit
         const val JUnitJupiter = "5.6.2"
@@ -42,8 +42,7 @@ object Dependencies {
 
     object Libraries {
 
-        const val Kotlin = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.Kotlin}"
-        const val KotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:${Versions.Kotlin}"
+        const val Kotlin = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.Kotlin}"
 
         const val Gson = "com.google.code.gson:gson:${Versions.Gson}"
         const val AssertJ = "net.wuerl.kotlin:assertj-core-kotlin:${Versions.AssertJ}"
