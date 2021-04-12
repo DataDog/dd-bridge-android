@@ -14,7 +14,13 @@ class DdSdkConfigurationForgeryFactory : ForgeryFactory<DdSdkConfiguration> {
             nativeCrashReportEnabled = forge.aNullable { aBool() },
             sampleRate = forge.aNullable { aDouble(0.0, 100.0) },
             site = forge.aNullable { anElementFrom("US", "EU", "GOV") },
-            additionalConfig = null // TODO
+            additionalConfig = forge.aMap {
+                forge.anAsciiString() to forge.anElementFrom(
+                    forge.aMap { forge.anAsciiString() to forge.aString() },
+                    forge.aString(),
+                    null
+                )
+            }
         )
     }
 }
