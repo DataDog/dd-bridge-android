@@ -41,7 +41,7 @@ create_key:
   when: manual
   tags: [ "runner:docker", "size:large" ]
   variables:
-    PROJECT_NAME: "dd-sdk-android"
+    PROJECT_NAME: "dd-bridge-android"
     EXPORT_TO_KEYSERVER: "true"
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/ci/agent-key-management-tools/gpg:1
   script:
