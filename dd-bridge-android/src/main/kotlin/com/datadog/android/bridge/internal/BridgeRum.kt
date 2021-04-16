@@ -138,6 +138,10 @@ internal class BridgeRum : DdRum {
         )
     }
 
+    override fun addTiming(name: String) {
+        GlobalRum.get().addTiming(name)
+    }
+
     // region Internal
 
     private fun String.asRumActionType(): RumActionType {

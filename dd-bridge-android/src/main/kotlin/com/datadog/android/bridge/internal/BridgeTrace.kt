@@ -15,9 +15,13 @@ internal class BridgeTrace : DdTrace {
 
     private val spanMap: MutableMap<String, Span> = mutableMapOf()
 
-    override fun startSpan(operation: String, timestamp: Long, context: Map<String, Any?>): String {
+    override fun startSpan(
+        operation: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ): String {
         val span = GlobalTracer.get().buildSpan(operation)
-            .withStartTimestamp(TimeUnit.MILLISECONDS.toMicros(timestamp))
+            .withStartTimestamp(TimeUnit.MILLISECONDS.toMicros(timestampMs))
             .start()
         val spanContext = span.context()
 
@@ -35,7 +39,11 @@ internal class BridgeTrace : DdTrace {
         return spanId
     }
 
-    override fun finishSpan(spanId: String, timestamp: Long, context: Map<String, Any?>) {
+    override fun finishSpan(
+        spanId: String,
+        timestampMs: Long,
+        context: Map<String, Any?>
+    ) {
         val span = spanMap.remove(spanId) ?: return
         context.forEach {
             val value = it.value
@@ -46,6 +54,6 @@ internal class BridgeTrace : DdTrace {
                 else -> span.setTag(it.key, value?.toString())
             }
         }
-        span.finish(TimeUnit.MILLISECONDS.toMicros(timestamp))
+        span.finish(TimeUnit.MILLISECONDS.toMicros(timestampMs))
     }
 }

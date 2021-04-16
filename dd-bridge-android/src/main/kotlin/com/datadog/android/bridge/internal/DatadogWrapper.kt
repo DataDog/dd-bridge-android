@@ -27,4 +27,6 @@ internal interface DatadogWrapper {
     fun registerRumMonitor(rumMonitor: RumMonitor)
 
     fun addRumGlobalAttributes(attributes: Map<String, Any?>)
+
+    fun setTrackingConsent(trackingConsent: TrackingConsent)
 }

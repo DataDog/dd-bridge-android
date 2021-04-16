@@ -20,7 +20,8 @@ class DdSdkConfigurationForgeryFactory : ForgeryFactory<DdSdkConfiguration> {
                     forge.aString(),
                     null
                 )
-            }
+            },
+            trackingConsent = forge.aNullable { anElementFrom("pending", "granted", "not_granted") }
         )
     }
 }

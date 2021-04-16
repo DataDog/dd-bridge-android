@@ -6,8 +6,6 @@
 
 package com.datadog.android.bridge
 
-import android.content.Context
-
 /**
  * The entry point to use Datadog's Logs feature.
  */
@@ -32,5 +30,4 @@ interface DdLogs {
      * Send a log with level error.
      */
     fun error(message: String, context: Map<String, Any?>): Unit
-
 }
