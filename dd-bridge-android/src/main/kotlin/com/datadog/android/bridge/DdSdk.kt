@@ -6,6 +6,8 @@
 
 package com.datadog.android.bridge
 
+import android.content.Context
+
 /**
  * The entry point to initialize Datadog's features.
  */
@@ -25,4 +27,10 @@ interface DdSdk {
      * Set the user information.
      */
     fun setUser(user: Map<String, Any?>): Unit
+
+    /**
+     * Set the tracking consent regarding the data collection.
+     */
+    fun setTrackingConsent(trackingConsent: String): Unit
+
 }
