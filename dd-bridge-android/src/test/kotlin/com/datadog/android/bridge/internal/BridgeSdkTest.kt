@@ -20,6 +20,7 @@ import com.nhaarman.mockitokotlin2.isNull
 import com.nhaarman.mockitokotlin2.same
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.AdvancedForgery
 import fr.xgouchet.elmyr.annotation.Forgery
 import fr.xgouchet.elmyr.annotation.MapForgery
@@ -27,6 +28,7 @@ import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.annotation.StringForgeryType
 import fr.xgouchet.elmyr.junit5.ForgeConfiguration
 import fr.xgouchet.elmyr.junit5.ForgeExtension
+import java.util.Locale
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -78,7 +80,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(TrackingConsent.GRANTED)
+                eq(configuration.trackingConsent.asTrackingConsent())
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -136,7 +138,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(TrackingConsent.GRANTED)
+                eq(configuration.trackingConsent.asTrackingConsent())
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -191,7 +193,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(TrackingConsent.GRANTED)
+                eq(configuration.trackingConsent.asTrackingConsent())
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -250,7 +252,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(TrackingConsent.GRANTED)
+                eq(configuration.trackingConsent.asTrackingConsent())
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -302,7 +304,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(TrackingConsent.GRANTED)
+                eq(configuration.trackingConsent.asTrackingConsent())
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -352,7 +354,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(TrackingConsent.GRANTED)
+                eq(configuration.trackingConsent.asTrackingConsent())
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -402,7 +404,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(TrackingConsent.GRANTED)
+                eq(configuration.trackingConsent.asTrackingConsent())
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -606,4 +608,78 @@ internal class BridgeSdkTest {
         // Then
         verify(mockDatadog).addRumGlobalAttributes(customAttributes)
     }
+
+    @Test
+    fun `𝕄 build Granted consent 𝕎 buildTrackingConsent {granted}`(forge: Forge) {
+
+        // When
+        val consent = testedBridgeSdk.buildTrackingConsent(
+            forge.anElementFrom("granted", "GRANTED")
+        )
+
+        // Then
+        assertThat(consent).isEqualTo(TrackingConsent.GRANTED)
+    }
+
+    @Test
+    fun `𝕄 build Pending consent 𝕎 buildTrackingConsent {pending}`(forge: Forge) {
+
+        // When
+        val consent = testedBridgeSdk.buildTrackingConsent(
+            forge.anElementFrom("pending", "PENDING")
+        )
+
+        // Then
+        assertThat(consent).isEqualTo(TrackingConsent.PENDING)
+    }
+
+    @Test
+    fun `𝕄 build Granted consent 𝕎 buildTrackingConsent {not_granted}`(forge: Forge) {
+
+        // When
+        val consent = testedBridgeSdk.buildTrackingConsent(
+            forge.anElementFrom("not_granted", "NOT_GRANTED")
+        )
+
+        // Then
+        assertThat(consent).isEqualTo(TrackingConsent.NOT_GRANTED)
+    }
+
+    @Test
+    fun `𝕄 build default Pending consent 𝕎 buildTrackingConsent {any}`(forge: Forge) {
+
+        // When
+        val consent = testedBridgeSdk.buildTrackingConsent(
+            forge.anElementFrom(null, "some-type")
+        )
+
+        // Then
+        assertThat(consent).isEqualTo(TrackingConsent.PENDING)
+    }
+
+    @Test
+    fun `𝕄 call setTrackingConsent 𝕎 setTrackingConsent ()`(forge: Forge) {
+
+        // Given
+        val consent = forge.anElementFrom("pending", "granted", "not_granted")
+
+        // When
+        testedBridgeSdk.setTrackingConsent(consent)
+
+        // Then
+        verify(mockDatadog).setTrackingConsent(consent.asTrackingConsent())
+    }
+
+    // region Internal
+
+    private fun String?.asTrackingConsent(): TrackingConsent {
+        return when (this?.toLowerCase(Locale.US)) {
+            "pending" -> TrackingConsent.PENDING
+            "granted" -> TrackingConsent.GRANTED
+            "not_granted" -> TrackingConsent.NOT_GRANTED
+            else -> TrackingConsent.PENDING
+        }
+    }
+
+    // endregion
 }

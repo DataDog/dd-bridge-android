@@ -14,6 +14,7 @@ package com.datadog.android.bridge
  * @param nativeCrashReportEnabled Whether the SDK should track native (pure iOS or pure Android) crashes (default is false).
  * @param sampleRate The sample rate (between 0 and 100) of RUM sessions kept.
  * @param site The Datadog site of your organization (can be 'US', 'EU' or 'GOV', default is 'US').
+ * @param trackingConsent Consent, which can take one of the following values: 'pending', 'granted', 'not_granted'.
  * @param additionalConfig Additional configuration parameters.
  */
 data class DdSdkConfiguration(
@@ -23,5 +24,6 @@ data class DdSdkConfiguration(
     val nativeCrashReportEnabled: Boolean? = null,
     val sampleRate: Double? = null,
     val site: String? = null,
+    val trackingConsent: String? = null,
     val additionalConfig: Map<String, Any?>? = null
 )

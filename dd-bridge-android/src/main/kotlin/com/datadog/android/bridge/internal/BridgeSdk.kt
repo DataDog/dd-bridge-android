@@ -14,6 +14,7 @@ import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.RumMonitor
+import java.util.Locale
 
 internal class BridgeSdk(
     context: Context,
@@ -27,9 +28,10 @@ internal class BridgeSdk(
     override fun initialize(configuration: DdSdkConfiguration) {
         val credentials = buildCredentials(configuration)
         val nativeConfiguration = buildConfiguration(configuration)
+        val trackingConsent = buildTrackingConsent(configuration.trackingConsent)
 
         datadog.setVerbosity(Log.VERBOSE)
-        datadog.initialize(appContext, credentials, nativeConfiguration, TrackingConsent.GRANTED)
+        datadog.initialize(appContext, credentials, nativeConfiguration, trackingConsent)
 
         datadog.registerRumMonitor(RumMonitor.Builder().build())
     }
@@ -44,6 +46,10 @@ internal class BridgeSdk(
 
     override fun setAttributes(attributes: Map<String, Any?>) {
         datadog.addRumGlobalAttributes(attributes)
+    }
+
+    override fun setTrackingConsent(trackingConsent: String) {
+        datadog.setTrackingConsent(buildTrackingConsent(trackingConsent))
     }
 
     // endregion
@@ -82,6 +88,22 @@ internal class BridgeSdk(
             rumApplicationId = configuration.applicationId,
             variant = ""
         )
+    }
+
+    internal fun buildTrackingConsent(trackingConsent: String?): TrackingConsent {
+        return when (trackingConsent?.toLowerCase(Locale.US)) {
+            "pending" -> TrackingConsent.PENDING
+            "granted" -> TrackingConsent.GRANTED
+            "not_granted" -> TrackingConsent.NOT_GRANTED
+            else -> {
+                Log.w(
+                    BridgeSdk::class.java.canonicalName,
+                    "Unknown consent given: $trackingConsent, " +
+                        "using ${TrackingConsent.PENDING} as default"
+                )
+                TrackingConsent.PENDING
+            }
+        }
     }
 
     // endregion

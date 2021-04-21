@@ -286,4 +286,14 @@ internal class BridgeRumTest {
             updatedContext
         )
     }
+
+    @Test
+    fun `M call addTiming W addTiming()`(@StringForgery timing: String) {
+
+        // When
+        testedDdRum.addTiming(timing)
+
+        // Then
+        verify(mockRumMonitor).addTiming(timing)
+    }
 }

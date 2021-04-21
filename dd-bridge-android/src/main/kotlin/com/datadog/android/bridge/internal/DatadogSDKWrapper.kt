@@ -41,4 +41,8 @@ internal class DatadogSDKWrapper : DatadogWrapper {
             GlobalRum.addAttribute(it.key, it.value)
         }
     }
+
+    override fun setTrackingConsent(trackingConsent: TrackingConsent) {
+        Datadog.setTrackingConsent(trackingConsent)
+    }
 }

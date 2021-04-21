@@ -25,4 +25,9 @@ interface DdSdk {
      * Set the user information.
      */
     fun setUser(user: Map<String, Any?>): Unit
+
+    /**
+     * Set the tracking consent regarding the data collection.
+     */
+    fun setTrackingConsent(trackingConsent: String): Unit
 }
