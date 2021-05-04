@@ -99,6 +99,15 @@ analysis:api-surface:
     - git fetch --depth=1 origin main
     - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :dd-bridge-android:checkApiSurfaceChanges
 
+analysis:woke:
+  tags: [ "runner:main", "size:large" ]
+  image: $CI_IMAGE_DOCKER
+  stage: analysis
+  timeout: 30m
+  script:
+    - git fetch --depth=1 origin main
+    - /usr/bin/woke --exit-1-on-failure
+
 # TESTS
 
 test:debug:
