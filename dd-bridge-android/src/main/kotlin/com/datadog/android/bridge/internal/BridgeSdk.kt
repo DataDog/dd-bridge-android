@@ -14,6 +14,8 @@ import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.RumMonitor
+import com.datadog.android.tracing.AndroidTracer
+import io.opentracing.util.GlobalTracer
 import java.util.Locale
 
 internal class BridgeSdk(
@@ -34,6 +36,10 @@ internal class BridgeSdk(
         datadog.initialize(appContext, credentials, nativeConfiguration, trackingConsent)
 
         datadog.registerRumMonitor(RumMonitor.Builder().build())
+
+        if (configuration.manualTracingEnabled == true) {
+            GlobalTracer.registerIfAbsent(AndroidTracer.Builder().build())
+        }
     }
 
     override fun setUser(user: Map<String, Any?>) {
@@ -59,7 +65,7 @@ internal class BridgeSdk(
     private fun buildConfiguration(configuration: DdSdkConfiguration): Configuration {
         val configBuilder = Configuration.Builder(
             logsEnabled = true,
-            tracesEnabled = true,
+            tracesEnabled = configuration.manualTracingEnabled ?: false,
             crashReportsEnabled = configuration.nativeCrashReportEnabled ?: false,
             rumEnabled = true
         )

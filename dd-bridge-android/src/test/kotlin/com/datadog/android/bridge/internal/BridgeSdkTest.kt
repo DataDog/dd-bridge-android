@@ -9,8 +9,11 @@ import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.core.configuration.UploadFrequency
 import com.datadog.android.plugin.DatadogPlugin
 import com.datadog.android.privacy.TrackingConsent
+import com.datadog.android.tracing.AndroidTracer
 import com.datadog.tools.unit.GenericAssert.Companion.assertThat
 import com.datadog.tools.unit.forge.BaseConfigurator
+import com.datadog.tools.unit.getStaticValue
+import com.datadog.tools.unit.setStaticValue
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.doReturn
@@ -28,8 +31,13 @@ import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.annotation.StringForgeryType
 import fr.xgouchet.elmyr.junit5.ForgeConfiguration
 import fr.xgouchet.elmyr.junit5.ForgeExtension
+import io.opentracing.Tracer
+import io.opentracing.noop.NoopTracer
+import io.opentracing.noop.NoopTracerFactory
+import io.opentracing.util.GlobalTracer
 import java.util.Locale
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -61,12 +69,22 @@ internal class BridgeSdkTest {
         testedBridgeSdk = BridgeSdk(mockContext, mockDatadog)
     }
 
+    @AfterEach
+    fun `tear down`() {
+        GlobalTracer::class.java.setStaticValue("isRegistered", false)
+        GlobalTracer::class.java.setStaticValue("tracer", NoopTracerFactory.create())
+    }
+
     @Test
     fun `𝕄 initialize native SDK 𝕎 initialize() {native crash report enabled, site = null}`(
         @Forgery configuration: DdSdkConfiguration
     ) {
         // Given
-        val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = true, site = null)
+        val bridgeConfiguration = configuration.copy(
+            nativeCrashReportEnabled = true,
+            site = null,
+            manualTracingEnabled = true
+        )
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
         val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
@@ -124,7 +142,11 @@ internal class BridgeSdkTest {
         @Forgery configuration: DdSdkConfiguration
     ) {
         // Given
-        val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = false, site = null)
+        val bridgeConfiguration = configuration.copy(
+            nativeCrashReportEnabled = false,
+            site = null,
+            manualTracingEnabled = true
+        )
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
         val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
@@ -179,7 +201,11 @@ internal class BridgeSdkTest {
         @Forgery configuration: DdSdkConfiguration
     ) {
         // Given
-        val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = null, site = null)
+        val bridgeConfiguration = configuration.copy(
+            nativeCrashReportEnabled = null,
+            site = null,
+            manualTracingEnabled = true
+        )
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
         val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
@@ -237,7 +263,8 @@ internal class BridgeSdkTest {
         val bridgeConfiguration = configuration.copy(
             additionalConfig = null,
             nativeCrashReportEnabled = false,
-            site = null
+            site = null,
+            manualTracingEnabled = true
         )
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
@@ -290,7 +317,7 @@ internal class BridgeSdkTest {
         @Forgery configuration: DdSdkConfiguration
     ) {
         // Given
-        val bridgeConfiguration = configuration.copy(site = "US")
+        val bridgeConfiguration = configuration.copy(site = "US", manualTracingEnabled = true)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
         val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
@@ -340,7 +367,7 @@ internal class BridgeSdkTest {
         @Forgery configuration: DdSdkConfiguration
     ) {
         // Given
-        val bridgeConfiguration = configuration.copy(site = "EU")
+        val bridgeConfiguration = configuration.copy(site = "EU", manualTracingEnabled = true)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
         val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
@@ -390,7 +417,7 @@ internal class BridgeSdkTest {
         @Forgery configuration: DdSdkConfiguration
     ) {
         // Given
-        val bridgeConfiguration = configuration.copy(site = "GOV")
+        val bridgeConfiguration = configuration.copy(site = "GOV", manualTracingEnabled = true)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
         val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
@@ -433,6 +460,159 @@ internal class BridgeSdkTest {
         assertThat(credentials.envName).isEqualTo(configuration.env)
         assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
         assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 enable tracer 𝕎 initialize() {manualTracingEnabled = true}`(
+        @Forgery configuration: DdSdkConfiguration
+    ) {
+        // Given
+        val bridgeConfiguration = configuration.copy(manualTracingEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(configuration.trackingConsent.asTrackingConsent())
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
+            }
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
+        assertThat(credentials.envName).isEqualTo(configuration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+
+        val tracer: Tracer = GlobalTracer::class.java.getStaticValue("tracer")
+        assertThat(tracer).isInstanceOf(AndroidTracer::class.java)
+    }
+
+    @Test
+    fun `𝕄 use no-op tracer + disable traces 𝕎 initialize() {manualTracingEnabled = false}`(
+        @Forgery configuration: DdSdkConfiguration
+    ) {
+        // Given
+        val bridgeConfiguration = configuration.copy(manualTracingEnabled = false)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(configuration.trackingConsent.asTrackingConsent())
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo("tracesConfig", null)
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
+            }
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
+        assertThat(credentials.envName).isEqualTo(configuration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+
+        val tracer: Tracer = GlobalTracer::class.java.getStaticValue("tracer")
+        assertThat(tracer).isInstanceOf(NoopTracer::class.java)
+    }
+
+    @Test
+    fun `𝕄 use no-op tracer + disableTraces 𝕎 initialize() {manualTracingEnabled = null}`(
+        @Forgery configuration: DdSdkConfiguration
+    ) {
+        // Given
+        val bridgeConfiguration = configuration.copy(manualTracingEnabled = null)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(configuration.trackingConsent.asTrackingConsent())
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo("tracesConfig", null)
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
+            }
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
+        assertThat(credentials.envName).isEqualTo(configuration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+
+        val tracer: Tracer = GlobalTracer::class.java.getStaticValue("tracer")
+        assertThat(tracer).isInstanceOf(NoopTracer::class.java)
     }
 
     @Test
