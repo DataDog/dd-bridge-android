@@ -16,6 +16,7 @@ package com.datadog.android.bridge
  * @param site The Datadog site of your organization (can be 'US', 'EU' or 'GOV', default is 'US').
  * @param trackingConsent Consent, which can take one of the following values: 'pending', 'granted', 'not_granted'.
  * @param additionalConfig Additional configuration parameters.
+ * @param manualTracingEnabled Whether the SDK should enable tracer to be able to submit spans from the user (default is false).
  */
 data class DdSdkConfiguration(
     val clientToken: String,
@@ -25,5 +26,6 @@ data class DdSdkConfiguration(
     val sampleRate: Double? = null,
     val site: String? = null,
     val trackingConsent: String? = null,
-    val additionalConfig: Map<String, Any?>? = null
+    val additionalConfig: Map<String, Any?>? = null,
+    val manualTracingEnabled: Boolean? = null
 )
