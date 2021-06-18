@@ -7,20 +7,27 @@
 package com.datadog.android.bridge.internal
 
 import com.datadog.android.bridge.DdTrace
+import com.datadog.android.tracing.AndroidTracer
 import io.opentracing.Span
-import io.opentracing.util.GlobalTracer
+import io.opentracing.Tracer
 import java.util.concurrent.TimeUnit
 
-internal class BridgeTrace : DdTrace {
+internal class BridgeTrace(
+    private val tracerProvider: () -> Tracer = { AndroidTracer.Builder().build() }
+) : DdTrace {
 
     private val spanMap: MutableMap<String, Span> = mutableMapOf()
+
+    // lazy here is on purpose. The thing is that this class will be instantiated even
+    // before Sdk.initialize is called, but Tracer can be created only after SDK is initialized.
+    private val tracer by lazy { tracerProvider.invoke() }
 
     override fun startSpan(
         operation: String,
         timestampMs: Long,
         context: Map<String, Any?>
     ): String {
-        val span = GlobalTracer.get().buildSpan(operation)
+        val span = tracer.buildSpan(operation)
             .withStartTimestamp(TimeUnit.MILLISECONDS.toMicros(timestampMs))
             .start()
         val spanContext = span.context()

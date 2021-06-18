@@ -7,8 +7,6 @@
 package com.datadog.android.bridge.internal
 
 import com.datadog.android.bridge.DdTrace
-import com.datadog.tools.unit.setFieldValue
-import com.datadog.tools.unit.setStaticValue
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.never
@@ -24,10 +22,7 @@ import fr.xgouchet.elmyr.junit5.ForgeExtension
 import io.opentracing.Span
 import io.opentracing.SpanContext
 import io.opentracing.Tracer
-import io.opentracing.noop.NoopTracerFactory
-import io.opentracing.util.GlobalTracer
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -86,15 +81,7 @@ internal class BridgeTraceTest {
         whenever(mockSpanContext.toSpanId()) doReturn fakeSpanId
         whenever(mockSpanContext.toTraceId()) doReturn fakeTraceId
 
-        GlobalTracer.registerIfAbsent(mockTracer)
-
-        testedTrace = BridgeTrace()
-    }
-
-    @AfterEach
-    fun `tear down`() {
-        GlobalTracer.get().setFieldValue("isRegistered", false)
-        GlobalTracer::class.java.setStaticValue("tracer", NoopTracerFactory.create())
+        testedTrace = BridgeTrace(tracerProvider = { mockTracer })
     }
 
     @Test
