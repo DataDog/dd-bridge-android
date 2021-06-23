@@ -28,3 +28,6 @@ class com.datadog.android.bridge.DdSdkConfiguration
 interface com.datadog.android.bridge.DdTrace
   fun startSpan(String, Long, Map<String, Any?>): String
   fun finishSpan(String, Long, Map<String, Any?>): Unit
+object com.datadog.android.bridge.internal.NoOpViewTrackingStrategy : com.datadog.android.rum.tracking.ViewTrackingStrategy
+  override fun register(android.content.Context)
+  override fun unregister(android.content.Context?)
