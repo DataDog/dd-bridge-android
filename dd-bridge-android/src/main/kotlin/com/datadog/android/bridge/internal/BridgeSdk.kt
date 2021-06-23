@@ -14,6 +14,7 @@ import com.datadog.android.core.configuration.Configuration
 import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.RumMonitor
+import com.datadog.android.rum.tracking.ActivityViewTrackingStrategy
 import java.util.Locale
 
 internal class BridgeSdk(
@@ -71,12 +72,21 @@ internal class BridgeSdk(
         if (configuration.sampleRate != null) {
             configBuilder.sampleRumSessions(configuration.sampleRate.toFloat())
         }
+
         if (configuration.site.equals("US", ignoreCase = true)) {
             configBuilder.useUSEndpoints()
         } else if (configuration.site.equals("EU", ignoreCase = true)) {
             configBuilder.useEUEndpoints()
         } else if (configuration.site.equals("GOV", ignoreCase = true)) {
             configBuilder.useGovEndpoints()
+        }
+
+        val viewTracking = configuration.additionalConfig?.get(NATIVE_VIEW_TRACKING) as? Boolean
+        if (viewTracking == true) {
+            // Use sensible default
+            configBuilder.useViewTrackingStrategy(ActivityViewTrackingStrategy(false))
+        } else {
+            configBuilder.useViewTrackingStrategy(NoOpViewTrackingStrategy)
         }
         return configBuilder.build()
     }
@@ -107,4 +117,8 @@ internal class BridgeSdk(
     }
 
     // endregion
+
+    companion object {
+        internal const val NATIVE_VIEW_TRACKING = "_dd.native_view_tracking"
+    }
 }
