@@ -1,6 +1,7 @@
 package com.datadog.android.bridge.internal
 
 import android.content.Context
+import android.util.Log
 import com.datadog.android.DatadogEndpoint
 import com.datadog.android.bridge.DdSdkConfiguration
 import com.datadog.android.core.configuration.BatchSize
@@ -18,12 +19,14 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.inOrder
 import com.nhaarman.mockitokotlin2.isNull
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.same
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.AdvancedForgery
 import fr.xgouchet.elmyr.annotation.Forgery
+import fr.xgouchet.elmyr.annotation.IntForgery
 import fr.xgouchet.elmyr.annotation.MapForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.annotation.StringForgeryType
@@ -526,6 +529,51 @@ internal class BridgeSdkTest {
             .hasField("rumConfig") {
                 it.hasFieldEqualTo("viewTrackingStrategy", ActivityViewTrackingStrategy(false))
             }
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {sdk verbosity}`(
+        @Forgery configuration: DdSdkConfiguration,
+        @IntForgery(Log.DEBUG, Log.ASSERT) verbosity: Int
+    ) {
+        // Given
+        val verbosityName = when (verbosity) {
+            Log.DEBUG -> "debug"
+            Log.INFO -> "info"
+            Log.WARN -> "warn"
+            Log.ERROR -> "error"
+            else -> ""
+        }
+        val bridgeConfiguration = configuration.copy(
+            additionalConfig = mapOf(
+                BridgeSdk.SDK_VERBOSITY to verbosityName
+            )
+        )
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        verify(mockDatadog).setVerbosity(verbosity)
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {invalid sdk verbosity}`(
+        @Forgery configuration: DdSdkConfiguration,
+        @StringForgery(StringForgeryType.HEXADECIMAL) verbosity: String
+    ) {
+        // Given
+        val bridgeConfiguration = configuration.copy(
+            additionalConfig = mapOf(
+                BridgeSdk.SDK_VERBOSITY to verbosity
+            )
+        )
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        verify(mockDatadog, never()).setVerbosity(any())
     }
 
     @Test
