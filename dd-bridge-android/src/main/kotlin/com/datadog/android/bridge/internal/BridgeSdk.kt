@@ -31,7 +31,8 @@ internal class BridgeSdk(
         val nativeConfiguration = buildConfiguration(configuration)
         val trackingConsent = buildTrackingConsent(configuration.trackingConsent)
 
-        datadog.setVerbosity(Log.VERBOSE)
+        configureSdkVerbosity(configuration)
+
         datadog.initialize(appContext, credentials, nativeConfiguration, trackingConsent)
 
         datadog.registerRumMonitor(RumMonitor.Builder().build())
@@ -56,6 +57,20 @@ internal class BridgeSdk(
     // endregion
 
     // region Internal
+
+    private fun configureSdkVerbosity(configuration: DdSdkConfiguration) {
+        val verbosityConfig = configuration.additionalConfig?.get(SDK_VERBOSITY) as? String
+        val verbosity = when (verbosityConfig?.toLowerCase(Locale.US)) {
+            "debug" -> Log.DEBUG
+            "info" -> Log.INFO
+            "warn" -> Log.WARN
+            "error" -> Log.ERROR
+            else -> null
+        }
+        if (verbosity != null) {
+            datadog.setVerbosity(verbosity)
+        }
+    }
 
     private fun buildConfiguration(configuration: DdSdkConfiguration): Configuration {
         val configBuilder = Configuration.Builder(
@@ -120,5 +135,6 @@ internal class BridgeSdk(
 
     companion object {
         internal const val NATIVE_VIEW_TRACKING = "_dd.native_view_tracking"
+        internal const val SDK_VERBOSITY = "_dd.sdk_verbosity"
     }
 }
