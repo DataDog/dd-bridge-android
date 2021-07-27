@@ -150,7 +150,7 @@ publish:release:
     - export OSSRH_USERNAME=$(aws ssm get-parameter --region us-east-1 --name ci.dd-bridge-android.signing.ossrh_username --with-decryption --query "Parameter.Value" --out text)
     - export OSSRH_PASSWORD=$(aws ssm get-parameter --region us-east-1 --name ci.dd-bridge-android.signing.ossrh_password --with-decryption --query "Parameter.Value" --out text)
     - git fetch --depth=1 origin main
-    - ./gradlew :dd-bridge-android:publishReleasePublicationToMavenRepository --stacktrace --no-daemon
+    - ./gradlew :dd-bridge-android:publishToSonatype --stacktrace --no-daemon
 
 # SLACK NOTIFICATIONS
 
