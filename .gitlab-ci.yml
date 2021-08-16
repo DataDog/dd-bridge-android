@@ -27,7 +27,7 @@ ci-image:
   stage: ci-image
   when: manual
   except: [ tags, schedules ]
-  tags: [ "runner:docker", "size:large" ]
+  tags: [ "runner:docker" ]
   image: 486234852809.dkr.ecr.us-east-1.amazonaws.com/docker:18.03.1
   script:
     - docker build --tag $CI_IMAGE_DOCKER -f Dockerfile.gitlab .
@@ -39,7 +39,7 @@ ci-image:
 create_key:
   stage: security
   when: manual
-  tags: [ "runner:docker", "size:large" ]
+  tags: [ "runner:docker" ]
   variables:
     PROJECT_NAME: "dd-bridge-android"
     EXPORT_TO_KEYSERVER: "true"
@@ -55,7 +55,7 @@ create_key:
 # STATIC ANALYSIS
 
 analysis:ktlint:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: analysis
   timeout: 30m
@@ -64,7 +64,7 @@ analysis:ktlint:
     - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :ktlintCheckAll --stacktrace --no-daemon
 
 analysis:android-lint:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: analysis
   timeout: 30m
@@ -73,7 +73,7 @@ analysis:android-lint:
     - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :lintCheckAll --stacktrace --no-daemon
 
 analysis:detekt:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: analysis
   timeout: 30m
@@ -82,7 +82,7 @@ analysis:detekt:
     - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :detektAll --stacktrace --no-daemon
 
 analysis:licenses:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: analysis
   timeout: 30m
@@ -91,7 +91,7 @@ analysis:licenses:
     - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :dd-bridge-android:checkThirdPartyLicences
 
 analysis:api-surface:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: analysis
   timeout: 30m
@@ -100,7 +100,7 @@ analysis:api-surface:
     - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :dd-bridge-android:checkApiSurfaceChanges
 
 analysis:woke:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: analysis
   timeout: 30m
@@ -111,7 +111,7 @@ analysis:woke:
 # TESTS
 
 test:debug:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: test
   timeout: 1h
@@ -123,7 +123,7 @@ test:debug:
     - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
 
 test:release:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   image: $CI_IMAGE_DOCKER
   stage: test
   timeout: 1h
@@ -137,7 +137,7 @@ test:release:
 # PUBLISH ARTIFACTS ON BINTRAY
 
 publish:release:
-  tags: [ "runner:main", "size:large" ]
+  tags: [ "runner:main" ]
   only:
     - tags
   image: $CI_IMAGE_DOCKER
