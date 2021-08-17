@@ -14,6 +14,7 @@ import fr.xgouchet.elmyr.annotation.MapForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.annotation.StringForgeryType
 import fr.xgouchet.elmyr.junit5.ForgeExtension
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -44,9 +45,20 @@ internal class BridgeLogsTest {
     )
     lateinit var fakeContext: Map<String, String>
 
+    @MapForgery(
+        key = AdvancedForgery(string = [StringForgery()]),
+        value = AdvancedForgery(string = [StringForgery(StringForgeryType.HEXADECIMAL)])
+    )
+    lateinit var fakeGlobalState: Map<String, String>
+
     @BeforeEach
     fun `set up`() {
         testedLogs = BridgeLogs(mockLogger)
+    }
+
+    @AfterEach
+    fun `tear down`() {
+        GlobalState.globalAttributes.clear()
     }
 
     @Test
@@ -83,5 +95,67 @@ internal class BridgeLogsTest {
 
         // Then
         verify(mockLogger).e(fakeMessage, attributes = fakeContext)
+    }
+
+
+
+    @Test
+    fun `M forward debug log with global state W debug()`() {
+        // Given
+        fakeGlobalState.forEach { (k, v) ->
+            GlobalState.globalAttributes[k] = v
+        }
+        val expectedAttributes = fakeContext + fakeGlobalState
+
+        // When
+        testedLogs.debug(fakeMessage, fakeContext)
+
+        // Then
+        verify(mockLogger).d(fakeMessage, attributes = expectedAttributes)
+    }
+
+    @Test
+    fun `M forward info log with global state W info()`() {
+        // Given
+        fakeGlobalState.forEach { (k, v) ->
+            GlobalState.globalAttributes[k] = v
+        }
+        val expectedAttributes = fakeContext + fakeGlobalState
+
+        // When
+        testedLogs.info(fakeMessage, fakeContext)
+
+        // Then
+        verify(mockLogger).i(fakeMessage, attributes = expectedAttributes)
+    }
+
+    @Test
+    fun `M forward warning log with global state W warn()`() {
+        // Given
+        fakeGlobalState.forEach { (k, v) ->
+            GlobalState.globalAttributes[k] = v
+        }
+        val expectedAttributes = fakeContext + fakeGlobalState
+
+        // When
+        testedLogs.warn(fakeMessage, fakeContext)
+
+        // Then
+        verify(mockLogger).w(fakeMessage, attributes = expectedAttributes)
+    }
+
+    @Test
+    fun `M forward error log with global state W error()`() {
+        // Given
+        fakeGlobalState.forEach { (k, v) ->
+            GlobalState.globalAttributes[k] = v
+        }
+        val expectedAttributes = fakeContext + fakeGlobalState
+
+        // When
+        testedLogs.error(fakeMessage, fakeContext)
+
+        // Then
+        verify(mockLogger).e(fakeMessage, attributes = expectedAttributes)
     }
 }
