@@ -10,6 +10,7 @@ import com.datadog.android.bridge.DdTrace
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.never
+import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import com.nhaarman.mockitokotlin2.whenever
@@ -23,6 +24,7 @@ import io.opentracing.Span
 import io.opentracing.SpanContext
 import io.opentracing.Tracer
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -72,6 +74,12 @@ internal class BridgeTraceTest {
     )
     lateinit var fakeContext: Map<String, String>
 
+    @MapForgery(
+        key = AdvancedForgery(string = [StringForgery()]),
+        value = AdvancedForgery(string = [StringForgery(StringForgeryType.HEXADECIMAL)])
+    )
+    lateinit var fakeGlobalState: Map<String, String>
+
     @BeforeEach
     fun `set up`() {
         whenever(mockTracer.buildSpan(fakeOperation)) doReturn mockSpanBuilder
@@ -82,6 +90,11 @@ internal class BridgeTraceTest {
         whenever(mockSpanContext.toTraceId()) doReturn fakeTraceId
 
         testedTrace = BridgeTrace(tracerProvider = { mockTracer })
+    }
+
+    @AfterEach
+    fun `tear down`() {
+        GlobalState.globalAttributes.clear()
     }
 
     @Test
@@ -168,6 +181,59 @@ internal class BridgeTraceTest {
         verify(mockSpan).context()
         verify(mockSpan).finish(endTimestamp * 1000)
         fakeContext.forEach {
+            verify(mockSpan).setTag(it.key, it.value)
+        }
+        verifyNoMoreInteractions(mockSpan)
+    }
+
+
+    @Test
+    fun `M start and stop span with global state on start W startSpan() + finishSpan()`(
+        @LongForgery(100, 2000) duration: Long
+    ) {
+        // Given
+        val endTimestamp = fakeTimestamp + duration
+
+        // When
+        fakeGlobalState.forEach { (k, v) ->
+            GlobalState.addAttribute(k, v)
+        }
+        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, fakeContext)
+        testedTrace.finishSpan(id, endTimestamp, emptyMap())
+
+        // Then
+        assertThat(id).isEqualTo(fakeSpanId)
+        verify(mockSpan).context()
+        verify(mockSpan).finish(endTimestamp * 1000)
+        fakeContext.forEach {
+            verify(mockSpan).setTag(it.key, it.value)
+        }
+        fakeGlobalState.forEach {
+            verify(mockSpan, times(2)).setTag(it.key, it.value)
+        }
+        verifyNoMoreInteractions(mockSpan)
+    }
+
+    @Test
+    fun `M start and stop span with global state on finish W startSpan() + finishSpan()`(
+        @LongForgery(100, 2000) duration: Long
+    ) {
+        // Given
+        val endTimestamp = fakeTimestamp + duration
+        val expectedAttributes = fakeContext + fakeGlobalState
+
+        // When
+        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, emptyMap())
+        fakeGlobalState.forEach { (k, v) ->
+            GlobalState.addAttribute(k, v)
+        }
+        testedTrace.finishSpan(id, endTimestamp, fakeContext)
+
+        // Then
+        assertThat(id).isEqualTo(fakeSpanId)
+        verify(mockSpan).context()
+        verify(mockSpan).finish(endTimestamp * 1000)
+        expectedAttributes.forEach {
             verify(mockSpan).setTag(it.key, it.value)
         }
         verifyNoMoreInteractions(mockSpan)

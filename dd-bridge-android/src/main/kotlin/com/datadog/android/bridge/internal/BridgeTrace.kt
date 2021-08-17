@@ -32,15 +32,8 @@ internal class BridgeTrace(
             .start()
         val spanContext = span.context()
 
-        context.forEach {
-            val value = it.value
-            when (value) {
-                is Boolean -> span.setTag(it.key, value)
-                is Number -> span.setTag(it.key, value)
-                is String -> span.setTag(it.key, value)
-                else -> span.setTag(it.key, value?.toString())
-            }
-        }
+        span.setTags(context)
+        span.setTags(GlobalState.globalAttributes)
         val spanId = spanContext.toSpanId()
         spanMap[spanId] = span
         return spanId
@@ -52,15 +45,19 @@ internal class BridgeTrace(
         context: Map<String, Any?>
     ) {
         val span = spanMap.remove(spanId) ?: return
-        context.forEach {
-            val value = it.value
+        span.setTags(context)
+        span.setTags(GlobalState.globalAttributes)
+        span.finish(TimeUnit.MILLISECONDS.toMicros(timestampMs))
+    }
+
+    private fun Span.setTags(tags: Map<String, Any?>) {
+        tags.forEach { (key, value) ->
             when (value) {
-                is Boolean -> span.setTag(it.key, value)
-                is Number -> span.setTag(it.key, value)
-                is String -> span.setTag(it.key, value)
-                else -> span.setTag(it.key, value?.toString())
+                is Boolean -> setTag(key, value)
+                is Number -> setTag(key, value)
+                is String -> setTag(key, value)
+                else -> setTag(key, value?.toString())
             }
         }
-        span.finish(TimeUnit.MILLISECONDS.toMicros(timestampMs))
     }
 }
