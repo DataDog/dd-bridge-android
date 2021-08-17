@@ -751,6 +751,25 @@ internal class BridgeSdkTest {
     }
 
     @Test
+    fun `𝕄 set GlobalState attributes 𝕎 setAttributes`(
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) customAttributes: Map<String, String>
+    ) {
+        // Given
+
+        // When
+        testedBridgeSdk.setAttributes(customAttributes)
+
+        // Then
+        customAttributes.forEach { (k, v) ->
+            assertThat(GlobalState.globalAttributes).containsEntry(k, v)
+        }
+    }
+
+
+    @Test
     fun `𝕄 build Granted consent 𝕎 buildTrackingConsent {granted}`(forge: Forge) {
 
         // When

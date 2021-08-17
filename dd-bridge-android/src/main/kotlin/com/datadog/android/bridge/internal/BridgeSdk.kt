@@ -48,6 +48,9 @@ internal class BridgeSdk(
 
     override fun setAttributes(attributes: Map<String, Any?>) {
         datadog.addRumGlobalAttributes(attributes)
+        attributes.forEach { (k, v) ->
+            GlobalState.addAttribute(k, v)
+        }
     }
 
     override fun setTrackingConsent(trackingConsent: String) {
@@ -124,7 +127,7 @@ internal class BridgeSdk(
                 Log.w(
                     BridgeSdk::class.java.canonicalName,
                     "Unknown consent given: $trackingConsent, " +
-                        "using ${TrackingConsent.PENDING} as default"
+                            "using ${TrackingConsent.PENDING} as default"
                 )
                 TrackingConsent.PENDING
             }
