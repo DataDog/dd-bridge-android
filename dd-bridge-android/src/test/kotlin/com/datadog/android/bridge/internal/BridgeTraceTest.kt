@@ -186,7 +186,6 @@ internal class BridgeTraceTest {
         verifyNoMoreInteractions(mockSpan)
     }
 
-
     @Test
     fun `M start and stop span with global state on start W startSpan() + finishSpan()`(
         @LongForgery(100, 2000) duration: Long

@@ -7,7 +7,6 @@ internal object GlobalState {
     // Keeps a record of global attributes for logs / spans
     internal val globalAttributes: MutableMap<String, Any?> = ConcurrentHashMap()
 
-
     /**
      * Adds a global attribute to all future RUM events.
      * @param key the attribute key (non null)

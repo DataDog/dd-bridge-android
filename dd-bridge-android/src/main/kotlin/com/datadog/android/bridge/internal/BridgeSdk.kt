@@ -127,7 +127,7 @@ internal class BridgeSdk(
                 Log.w(
                     BridgeSdk::class.java.canonicalName,
                     "Unknown consent given: $trackingConsent, " +
-                            "using ${TrackingConsent.PENDING} as default"
+                        "using ${TrackingConsent.PENDING} as default"
                 )
                 TrackingConsent.PENDING
             }

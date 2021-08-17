@@ -97,8 +97,6 @@ internal class BridgeLogsTest {
         verify(mockLogger).e(fakeMessage, attributes = fakeContext)
     }
 
-
-
     @Test
     fun `M forward debug log with global state W debug()`() {
         // Given
