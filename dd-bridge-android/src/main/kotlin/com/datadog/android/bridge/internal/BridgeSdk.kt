@@ -59,7 +59,7 @@ internal class BridgeSdk(
     // region Internal
 
     private fun configureSdkVerbosity(configuration: DdSdkConfiguration) {
-        val verbosityConfig = configuration.additionalConfig?.get(SDK_VERBOSITY) as? String
+        val verbosityConfig = configuration.additionalConfig?.get(DD_SDK_VERBOSITY) as? String
         val verbosity = when (verbosityConfig?.toLowerCase(Locale.US)) {
             "debug" -> Log.DEBUG
             "info" -> Log.INFO
@@ -96,7 +96,7 @@ internal class BridgeSdk(
             configBuilder.useGovEndpoints()
         }
 
-        val viewTracking = configuration.additionalConfig?.get(NATIVE_VIEW_TRACKING) as? Boolean
+        val viewTracking = configuration.additionalConfig?.get(DD_NATIVE_VIEW_TRACKING) as? Boolean
         if (viewTracking == true) {
             // Use sensible default
             configBuilder.useViewTrackingStrategy(ActivityViewTrackingStrategy(false))
@@ -107,11 +107,13 @@ internal class BridgeSdk(
     }
 
     private fun buildCredentials(configuration: DdSdkConfiguration): Credentials {
+        val serviceName = configuration.additionalConfig?.get(DD_SERVICE_NAME) as? String
         return Credentials(
             clientToken = configuration.clientToken,
             envName = configuration.env,
             rumApplicationId = configuration.applicationId,
-            variant = ""
+            variant = "",
+            serviceName = serviceName
         )
     }
 
@@ -134,7 +136,8 @@ internal class BridgeSdk(
     // endregion
 
     companion object {
-        internal const val NATIVE_VIEW_TRACKING = "_dd.native_view_tracking"
-        internal const val SDK_VERBOSITY = "_dd.sdk_verbosity"
+        internal const val DD_NATIVE_VIEW_TRACKING = "_dd.native_view_tracking"
+        internal const val DD_SDK_VERBOSITY = "_dd.sdk_verbosity"
+        internal const val DD_SERVICE_NAME = "_dd.service_name"
     }
 }
