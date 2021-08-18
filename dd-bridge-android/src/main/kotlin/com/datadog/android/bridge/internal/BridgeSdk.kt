@@ -48,6 +48,9 @@ internal class BridgeSdk(
 
     override fun setAttributes(attributes: Map<String, Any?>) {
         datadog.addRumGlobalAttributes(attributes)
+        attributes.forEach { (k, v) ->
+            GlobalState.addAttribute(k, v)
+        }
     }
 
     override fun setTrackingConsent(trackingConsent: String) {

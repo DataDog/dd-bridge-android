@@ -24,28 +24,28 @@ internal class BridgeLogs(
     override fun debug(message: String, context: Map<String, Any?>) {
         bridgeLogger.d(
             message = message,
-            attributes = context
+            attributes = context + GlobalState.globalAttributes
         )
     }
 
     override fun info(message: String, context: Map<String, Any?>) {
         bridgeLogger.i(
             message = message,
-            attributes = context
+            attributes = context + GlobalState.globalAttributes
         )
     }
 
     override fun warn(message: String, context: Map<String, Any?>) {
         bridgeLogger.w(
             message = message,
-            attributes = context
+            attributes = context + GlobalState.globalAttributes
         )
     }
 
     override fun error(message: String, context: Map<String, Any?>) {
         bridgeLogger.e(
             message = message,
-            attributes = context
+            attributes = context + GlobalState.globalAttributes
         )
     }
 }

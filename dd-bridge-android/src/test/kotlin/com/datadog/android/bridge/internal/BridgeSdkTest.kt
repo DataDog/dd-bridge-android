@@ -34,6 +34,7 @@ import fr.xgouchet.elmyr.junit5.ForgeConfiguration
 import fr.xgouchet.elmyr.junit5.ForgeExtension
 import java.util.Locale
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -63,6 +64,11 @@ internal class BridgeSdkTest {
     fun `set up`() {
         whenever(mockContext.applicationContext) doReturn mockContext
         testedBridgeSdk = BridgeSdk(mockContext, mockDatadog)
+    }
+
+    @AfterEach
+    fun `tear down`() {
+        GlobalState.globalAttributes.clear()
     }
 
     @Test
@@ -748,6 +754,24 @@ internal class BridgeSdkTest {
 
         // Then
         verify(mockDatadog).addRumGlobalAttributes(customAttributes)
+    }
+
+    @Test
+    fun `𝕄 set GlobalState attributes 𝕎 setAttributes`(
+        @MapForgery(
+            key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
+            value = AdvancedForgery(string = [StringForgery(StringForgeryType.ASCII)])
+        ) customAttributes: Map<String, String>
+    ) {
+        // Given
+
+        // When
+        testedBridgeSdk.setAttributes(customAttributes)
+
+        // Then
+        customAttributes.forEach { (k, v) ->
+            assertThat(GlobalState.globalAttributes).containsEntry(k, v)
+        }
     }
 
     @Test
