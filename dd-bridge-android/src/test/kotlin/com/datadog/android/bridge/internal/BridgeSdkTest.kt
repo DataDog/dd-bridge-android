@@ -443,6 +443,7 @@ internal class BridgeSdkTest {
         assertThat(credentials.envName).isEqualTo(configuration.env)
         assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
         assertThat(credentials.variant).isEqualTo("")
+        assertThat(credentials.serviceName).isNull()
     }
 
     @Test
@@ -480,7 +481,7 @@ internal class BridgeSdkTest {
         // Given
         val bridgeConfiguration = configuration.copy(
             additionalConfig = mapOf(
-                BridgeSdk.NATIVE_VIEW_TRACKING to false
+                BridgeSdk.DD_NATIVE_VIEW_TRACKING to false
             )
         )
         val credentialCaptor = argumentCaptor<Credentials>()
@@ -512,7 +513,7 @@ internal class BridgeSdkTest {
         // Given
         val bridgeConfiguration = configuration.copy(
             additionalConfig = mapOf(
-                BridgeSdk.NATIVE_VIEW_TRACKING to true
+                BridgeSdk.DD_NATIVE_VIEW_TRACKING to true
             )
         )
         val credentialCaptor = argumentCaptor<Credentials>()
@@ -552,7 +553,7 @@ internal class BridgeSdkTest {
         }
         val bridgeConfiguration = configuration.copy(
             additionalConfig = mapOf(
-                BridgeSdk.SDK_VERBOSITY to verbosityName
+                BridgeSdk.DD_SDK_VERBOSITY to verbosityName
             )
         )
 
@@ -571,7 +572,7 @@ internal class BridgeSdkTest {
         // Given
         val bridgeConfiguration = configuration.copy(
             additionalConfig = mapOf(
-                BridgeSdk.SDK_VERBOSITY to verbosity
+                BridgeSdk.DD_SDK_VERBOSITY to verbosity
             )
         )
 
@@ -580,6 +581,33 @@ internal class BridgeSdkTest {
 
         // Then
         verify(mockDatadog, never()).setVerbosity(any())
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {custom service name}`(
+        @Forgery configuration: DdSdkConfiguration,
+        @StringForgery serviceName: String
+    ) {
+        // Given
+        val bridgeConfiguration = configuration.copy(
+            additionalConfig = mapOf(
+                BridgeSdk.DD_SERVICE_NAME to serviceName
+            )
+        )
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        verify(mockDatadog).initialize(
+            same(mockContext),
+            credentialCaptor.capture(),
+            configCaptor.capture(),
+            eq(configuration.trackingConsent.asTrackingConsent())
+        )
+        assertThat(credentialCaptor.firstValue.serviceName).isEqualTo(serviceName)
     }
 
     @Test
