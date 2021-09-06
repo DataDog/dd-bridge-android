@@ -106,6 +106,12 @@ internal class BridgeSdk(
         } else {
             configBuilder.useViewTrackingStrategy(NoOpViewTrackingStrategy)
         }
+
+        val longTask = configuration.additionalConfig?.get(DD_LONG_TASK_THRESHOLD) as? Long
+        if (longTask != null) {
+            configBuilder.trackLongTasks(longTask)
+        }
+
         return configBuilder.build()
     }
 
@@ -142,5 +148,6 @@ internal class BridgeSdk(
         internal const val DD_NATIVE_VIEW_TRACKING = "_dd.native_view_tracking"
         internal const val DD_SDK_VERBOSITY = "_dd.sdk_verbosity"
         internal const val DD_SERVICE_NAME = "_dd.service_name"
+        internal const val DD_LONG_TASK_THRESHOLD = "_dd.long_task.threshold"
     }
 }

@@ -27,6 +27,7 @@ import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.AdvancedForgery
 import fr.xgouchet.elmyr.annotation.Forgery
 import fr.xgouchet.elmyr.annotation.IntForgery
+import fr.xgouchet.elmyr.annotation.LongForgery
 import fr.xgouchet.elmyr.annotation.MapForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.annotation.StringForgeryType
@@ -70,6 +71,8 @@ internal class BridgeSdkTest {
     fun `tear down`() {
         GlobalState.globalAttributes.clear()
     }
+
+    // region initialize()
 
     @Test
     fun `𝕄 initialize native SDK 𝕎 initialize() {native crash report enabled, site = null}`(
@@ -611,6 +614,47 @@ internal class BridgeSdkTest {
     }
 
     @Test
+    fun `𝕄 set long task threshold 𝕎 initialize() {custom long task threshold}`(
+        @Forgery configuration: DdSdkConfiguration,
+        @LongForgery(0, 65536) threshold: Long
+    ) {
+        // Given
+        val bridgeConfiguration = configuration.copy(
+            additionalConfig = mapOf(
+                BridgeSdk.DD_LONG_TASK_THRESHOLD to threshold
+            )
+        )
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        verify(mockDatadog).initialize(
+            same(mockContext),
+            credentialCaptor.capture(),
+            configCaptor.capture(),
+            eq(configuration.trackingConsent.asTrackingConsent())
+        )
+        assertThat(configCaptor.firstValue)
+            .hasField("rumConfig") { rumConfig ->
+                rumConfig.hasField("longTaskTrackingStrategy") { longTaskTrackingStrategy ->
+                    longTaskTrackingStrategy
+                        .isInstanceOf(
+                            "com.datadog.android.rum.internal.instrumentation." +
+                                "MainLooperLongTaskStrategy"
+                        )
+                        .hasFieldEqualTo("thresholdMs", threshold)
+                }
+            }
+    }
+
+    // endregion
+
+    // region misc
+
+    @Test
     fun `𝕄 set native user info 𝕎 setUser()`(
         @MapForgery(
             key = AdvancedForgery(string = [StringForgery(StringForgeryType.NUMERICAL)]),
@@ -862,6 +906,8 @@ internal class BridgeSdkTest {
         // Then
         verify(mockDatadog).setTrackingConsent(consent.asTrackingConsent())
     }
+
+    // endregion
 
     // region Internal
 
