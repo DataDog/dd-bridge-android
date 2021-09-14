@@ -79,6 +79,9 @@ android {
 dependencies {
     implementation(Dependencies.Libraries.DatadogSdk)
     implementation(Dependencies.Libraries.Kotlin)
+    // okhttp will be available in runtime with Datadog SDK, we don't want to include it in the
+    // build output for the bridge
+    compileOnly(Dependencies.Libraries.OkHttp)
 
     testImplementation(Dependencies.Libraries.JUnit5)
     testImplementation(Dependencies.Libraries.TestTools)

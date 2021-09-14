@@ -16,6 +16,8 @@ import com.datadog.android.core.configuration.Credentials
 import com.datadog.android.privacy.TrackingConsent
 import com.datadog.android.rum.RumMonitor
 import com.datadog.android.rum.tracking.ActivityViewTrackingStrategy
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.util.Locale
 
 internal class BridgeSdk(
@@ -76,6 +78,7 @@ internal class BridgeSdk(
         }
     }
 
+    @Suppress("ComplexMethod")
     private fun buildConfiguration(configuration: DdSdkConfiguration): Configuration {
         val configBuilder = Configuration.Builder(
             logsEnabled = true,
@@ -105,6 +108,10 @@ internal class BridgeSdk(
         val longTask = configuration.additionalConfig?.get(DD_LONG_TASK_THRESHOLD) as? Long
         if (longTask != null) {
             configBuilder.trackLongTasks(longTask)
+        }
+
+        buildProxyConfiguration(configuration)?.let { (proxy, authenticator) ->
+            configBuilder.setProxy(proxy, authenticator)
         }
 
         return configBuilder.build()
@@ -137,6 +144,44 @@ internal class BridgeSdk(
         }
     }
 
+    internal fun buildProxyConfiguration(configuration: DdSdkConfiguration):
+        Pair<Proxy, ProxyAuthenticator?>? {
+            val additionalConfig = configuration.additionalConfig ?: return null
+
+            val address = additionalConfig[DD_PROXY_ADDRESS] as? String
+            val port = (additionalConfig[DD_PROXY_PORT] as? Number)?.toInt()
+            val type = (additionalConfig[DD_PROXY_TYPE] as? String)?.let {
+                when (it.toLowerCase(Locale.US)) {
+                    "http", "https" -> Proxy.Type.HTTP
+                    "socks" -> Proxy.Type.SOCKS
+                    else -> {
+                        Log.w(
+                            BridgeSdk::class.java.canonicalName,
+                            "Unknown proxy type given: $it, skipping proxy configuration."
+                        )
+                        null
+                    }
+                }
+            }
+
+            val proxy = if (address != null && port != null && type != null) {
+                Proxy(type, InetSocketAddress(address, port))
+            } else {
+                return null
+            }
+
+            val username = additionalConfig[DD_PROXY_USERNAME] as? String
+            val password = additionalConfig[DD_PROXY_PASSWORD] as? String
+
+            val authenticator = if (username != null && password != null) {
+                ProxyAuthenticator(username, password)
+            } else {
+                null
+            }
+
+            return Pair(proxy, authenticator)
+        }
+
     private fun buildSite(site: String?): DatadogSite {
         val siteLower = site?.toLowerCase(Locale.US)
         return when (siteLower) {
@@ -156,5 +201,10 @@ internal class BridgeSdk(
         internal const val DD_SDK_VERBOSITY = "_dd.sdk_verbosity"
         internal const val DD_SERVICE_NAME = "_dd.service_name"
         internal const val DD_LONG_TASK_THRESHOLD = "_dd.long_task.threshold"
+        internal const val DD_PROXY_ADDRESS = "_dd.proxy.address"
+        internal const val DD_PROXY_PORT = "_dd.proxy.port"
+        internal const val DD_PROXY_TYPE = "_dd.proxy.type"
+        internal const val DD_PROXY_USERNAME = "_dd.proxy.username"
+        internal const val DD_PROXY_PASSWORD = "_dd.proxy.password"
     }
 }
