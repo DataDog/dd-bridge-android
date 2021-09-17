@@ -14,7 +14,6 @@ buildscript {
         google()
         mavenCentral()
         maven { setUrl(com.datadog.gradle.Dependencies.Repositories.Gradle) }
-        jcenter()
     }
 
     dependencies {
@@ -22,7 +21,6 @@ buildscript {
         classpath(com.datadog.gradle.Dependencies.ClassPaths.Kotlin)
         classpath(com.datadog.gradle.Dependencies.ClassPaths.KtLint)
         classpath(com.datadog.gradle.Dependencies.ClassPaths.Dokka)
-        classpath(com.datadog.gradle.Dependencies.ClassPaths.Bintray)
         classpath(com.datadog.gradle.Dependencies.ClassPaths.Unmock)
     }
 }
@@ -33,7 +31,6 @@ allprojects {
         mavenCentral()
         maven { setUrl(com.datadog.gradle.Dependencies.Repositories.Jitpack) }
         flatDir { dirs("libs") }
-        jcenter()
     }
 }
 

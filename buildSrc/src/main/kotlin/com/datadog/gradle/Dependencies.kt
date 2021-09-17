@@ -30,10 +30,9 @@ object Dependencies {
         const val MockitoKotlin = "2.2.0"
 
         // Tools
-        const val Detekt = "1.6.0"
+        const val Detekt = "1.17.0"
         const val KtLint = "9.4.0"
-        const val Dokka = "1.4.10"
-        const val Bintray = "1.8.4"
+        const val Dokka = "1.4.32"
         const val Unmock = "0.7.5"
 
         // Datadog
@@ -82,13 +81,11 @@ object Dependencies {
         const val Kotlin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin}"
         const val KtLint = "org.jlleitschuh.gradle:ktlint-gradle:${Versions.KtLint}"
         const val Dokka = "org.jetbrains.dokka:dokka-gradle-plugin:${Versions.Dokka}"
-        const val Bintray = "com.jfrog.bintray.gradle:gradle-bintray-plugin:${Versions.Bintray}"
         const val Unmock = "de.mobilej.unmock:UnMockPlugin:${Versions.Unmock}"
     }
 
     object Repositories {
         const val Gradle = "https://plugins.gradle.org/m2/"
         const val Jitpack = "https://jitpack.io"
-        const val Datadog = "https://dl.bintray.com/datadog/datadog-maven"
     }
 }
