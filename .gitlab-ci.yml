@@ -134,7 +134,7 @@ test:release:
     - GRADLE_OPTS="-XX:MaxPermSize=512m -Xmx2560m" ./gradlew :unitTestRelease --stacktrace --no-daemon
     - bash <(cat ./codecov.sh) -t $CODECOV_TOKEN
 
-# PUBLISH ARTIFACTS ON BINTRAY
+# PUBLISH ARTIFACTS ON SONATYPE
 
 publish:release:
   tags: [ "runner:main" ]
