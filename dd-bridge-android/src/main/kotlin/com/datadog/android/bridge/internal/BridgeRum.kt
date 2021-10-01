@@ -157,6 +157,7 @@ internal class BridgeRum : DdRum {
     private fun String.asRumResourceKind(): RumResourceKind {
         return when (toLowerCase(Locale.US)) {
             "xhr" -> RumResourceKind.XHR
+            "native" -> RumResourceKind.NATIVE
             "fetch" -> RumResourceKind.FETCH
             "document" -> RumResourceKind.DOCUMENT
             "beacon" -> RumResourceKind.BEACON

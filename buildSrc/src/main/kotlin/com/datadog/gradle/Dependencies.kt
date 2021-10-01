@@ -12,7 +12,7 @@ object Dependencies {
         // Commons
         const val Kotlin = "1.4.20"
         const val Gson = "2.8.6"
-        const val OkHttp = "3.12.6"
+        const val OkHttp = "3.12.13"
 
         // Android
         const val AndroidToolsPlugin = "4.1.2"
@@ -43,6 +43,7 @@ object Dependencies {
 
         const val Kotlin = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.Kotlin}"
 
+        const val OkHttp = "com.squareup.okhttp3:okhttp:${Versions.OkHttp}"
         const val Gson = "com.google.code.gson:gson:${Versions.Gson}"
         const val AssertJ = "net.wuerl.kotlin:assertj-core-kotlin:${Versions.AssertJ}"
 

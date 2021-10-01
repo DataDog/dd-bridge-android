@@ -33,9 +33,12 @@ import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.annotation.StringForgeryType
 import fr.xgouchet.elmyr.junit5.ForgeConfiguration
 import fr.xgouchet.elmyr.junit5.ForgeExtension
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.util.Locale
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -1451,6 +1454,177 @@ internal class BridgeSdkTest {
 
         // Then
         verify(mockDatadog).setTrackingConsent(consent.asTrackingConsent())
+    }
+
+    @Test
+    fun `𝕄 not build proxy config 𝕎 no proxy config specified`(
+        @Forgery configuration: DdSdkConfiguration
+    ) {
+
+        // Given
+        val config = configuration.copy(additionalConfig = null)
+
+        // When
+        val proxyConfig = testedBridgeSdk.buildProxyConfiguration(config)
+
+        // Then
+        assertThat(proxyConfig).isNull()
+    }
+
+    @Test
+    fun `𝕄 not build proxy config 𝕎 buildProxyConfiguration() { type is missing }`(
+        @Forgery configuration: DdSdkConfiguration,
+        forge: Forge
+    ) {
+        // Given
+        val additionalConfig = mapOf(
+            BridgeSdk.DD_PROXY_ADDRESS to "1.1.1.1",
+            BridgeSdk.DD_PROXY_PORT to forge.anInt(min = 0, max = 65536)
+        )
+        val config = configuration.copy(additionalConfig = additionalConfig)
+
+        // When
+        val proxyConfig = testedBridgeSdk.buildProxyConfiguration(config)
+
+        // Then
+        assertThat(proxyConfig).isNull()
+    }
+
+    @Test
+    fun `𝕄 not build proxy config 𝕎 buildProxyConfiguration() { wrong type is used } `(
+        @Forgery configuration: DdSdkConfiguration,
+        forge: Forge
+    ) {
+        // Given
+
+        val proxyType = forge.anAlphabeticalString()
+        assumeTrue(proxyType.toLowerCase(Locale.US) !in arrayOf("http", "https", "socks"))
+
+        val additionalConfig = mapOf(
+            BridgeSdk.DD_PROXY_TYPE to proxyType,
+            BridgeSdk.DD_PROXY_ADDRESS to "1.1.1.1",
+            BridgeSdk.DD_PROXY_PORT to forge.anInt(min = 0, max = 65536)
+        )
+        val config = configuration.copy(additionalConfig = additionalConfig)
+
+        // When
+        val proxyConfig = testedBridgeSdk.buildProxyConfiguration(config)
+
+        // Then
+        assertThat(proxyConfig).isNull()
+    }
+
+    @Test
+    fun `𝕄 not build proxy config 𝕎 buildProxyConfiguration() { address is missing }`(
+        @Forgery configuration: DdSdkConfiguration,
+        forge: Forge
+    ) {
+        // Given
+        val additionalConfig = mapOf(
+            BridgeSdk.DD_PROXY_TYPE to forge.anElementFrom("http", "https", "socks"),
+            BridgeSdk.DD_PROXY_PORT to forge.anInt(min = 0, max = 65536)
+        )
+        val config = configuration.copy(additionalConfig = additionalConfig)
+
+        // When
+        val proxyConfig = testedBridgeSdk.buildProxyConfiguration(config)
+
+        // Then
+        assertThat(proxyConfig).isNull()
+    }
+
+    @Test
+    fun `𝕄 not build proxy config 𝕎 buildProxyConfiguration() { port is missing }`(
+        @Forgery configuration: DdSdkConfiguration,
+        forge: Forge
+    ) {
+        // Given
+        val additionalConfig = mapOf(
+            BridgeSdk.DD_PROXY_TYPE to forge.anElementFrom("http", "https", "socks"),
+            BridgeSdk.DD_PROXY_ADDRESS to "1.1.1.1"
+        )
+        val config = configuration.copy(additionalConfig = additionalConfig)
+
+        // When
+        val proxyConfig = testedBridgeSdk.buildProxyConfiguration(config)
+
+        // Then
+        assertThat(proxyConfig).isNull()
+    }
+
+    @Test
+    fun `𝕄 build proxy configuration 𝕎 buildProxyConfiguration() { no credentials }`(
+        @Forgery configuration: DdSdkConfiguration,
+        forge: Forge
+    ) {
+        // Given
+        val proxyType = forge.anElementFrom("http", "https", "socks")
+
+        val additionalConfig = mapOf(
+            BridgeSdk.DD_PROXY_TYPE to proxyType,
+            BridgeSdk.DD_PROXY_ADDRESS to "1.1.1.1",
+            BridgeSdk.DD_PROXY_PORT to forge.anInt(min = 0, max = 65536)
+        )
+        val config = configuration.copy(additionalConfig = additionalConfig)
+
+        // When
+        val (proxy, authenticator) = testedBridgeSdk.buildProxyConfiguration(config)!!
+
+        // Then
+        assertThat(proxy.type()).matches {
+            when (proxyType) {
+                "http", "https" -> it == Proxy.Type.HTTP
+                else -> it == Proxy.Type.SOCKS
+            }
+        }
+
+        assertThat(proxy.address()).isNotNull
+
+        assertThat(authenticator).isNull()
+    }
+
+    @Test
+    fun `𝕄 build proxy configuration+authenticator 𝕎 buildProxyConfiguration() { +credentials }`(
+        @Forgery configuration: DdSdkConfiguration,
+        forge: Forge
+    ) {
+        // Given
+        val proxyType = forge.anElementFrom("http", "https", "socks")
+        val proxyUsername = forge.anAlphabeticalString()
+        val proxyPassword = forge.anAlphabeticalString()
+        val proxyPort = forge.anInt(min = 0, max = 65536)
+        val proxyAddress = "1.1.1.1"
+
+        val additionalConfig = mapOf(
+            BridgeSdk.DD_PROXY_TYPE to proxyType,
+            BridgeSdk.DD_PROXY_ADDRESS to proxyAddress,
+            BridgeSdk.DD_PROXY_PORT to proxyPort,
+            BridgeSdk.DD_PROXY_USERNAME to proxyUsername,
+            BridgeSdk.DD_PROXY_PASSWORD to proxyPassword
+        )
+        val config = configuration.copy(additionalConfig = additionalConfig)
+
+        // When
+        val (proxy, authenticator) = testedBridgeSdk.buildProxyConfiguration(config)!!
+
+        // Then
+        assertThat(proxy.type()).matches {
+            when (proxyType) {
+                "http", "https" -> it == Proxy.Type.HTTP
+                else -> it == Proxy.Type.SOCKS
+            }
+        }
+
+        assertThat(proxy.address()).isNotNull
+        assertThat(proxy.address()).isInstanceOf(InetSocketAddress::class.java)
+        (proxy.address() as InetSocketAddress).let {
+            assertThat(it.port).isEqualTo(proxyPort)
+            assertThat(it.address.hostAddress).isEqualTo(proxyAddress)
+        }
+
+        assertThat(authenticator).isNotNull
+        assertThat(authenticator?.username).isEqualTo(proxyUsername)
+        assertThat(authenticator?.password).isEqualTo(proxyPassword)
     }
 
     // endregion

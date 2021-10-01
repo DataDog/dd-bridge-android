@@ -1,6 +1,8 @@
 Dependencies List
 
 com.datadoghq:dd-sdk-android:1.11.0-beta1                       : 1294 Kb
+com.squareup.okhttp3:okhttp:3.12.13                             :  417 Kb
+com.squareup.okio:okio:1.15.0                                   :   86 Kb
 io.opentracing:opentracing-api:0.32.0                           :   18 Kb
 io.opentracing:opentracing-noop:0.32.0                          :   10 Kb
 io.opentracing:opentracing-util:0.32.0                          :   10 Kb
@@ -10,5 +12,5 @@ org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.4.20                  :   15 Kb
 org.jetbrains.kotlin:kotlin-stdlib:1.4.20                       : 1453 Kb
 org.jetbrains:annotations:13.0                                  :   17 Kb
 
-Total transitive dependencies size                              :    2 Mb
+Total transitive dependencies size                              :    3 Mb
 
