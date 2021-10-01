@@ -7,10 +7,16 @@ class GenericAssert(actual: Any) :
     AbstractAssert<GenericAssert, Any>(actual, GenericAssert::class.java) {
 
     fun hasField(name: String, nestedAssert: (GenericAssert) -> Unit = {}): GenericAssert {
-        val field: Any = actual.getFieldValue(name)
-        nestedAssert(GenericAssert(field))
+        val field: Any? = actual.getFieldValue(name)
+        assertThat(field)
+            .overridingErrorMessage(
+                "Expecting object to have a non null field named $name, but field was null"
+            )
+            .isNotNull()
+        nestedAssert(GenericAssert(field!!))
         return this
     }
+
     fun <F> hasFieldEqualTo(name: String, expected: F): GenericAssert {
         val field: Any? = actual.getFieldValue(name)
         assertThat(field).isEqualTo(expected)

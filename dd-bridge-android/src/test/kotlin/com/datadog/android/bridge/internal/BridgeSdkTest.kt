@@ -61,6 +61,9 @@ internal class BridgeSdkTest {
     @Mock
     lateinit var mockDatadog: DatadogWrapper
 
+    @Forgery
+    lateinit var fakeConfiguration: DdSdkConfiguration
+
     @BeforeEach
     fun `set up`() {
         whenever(mockContext.applicationContext) doReturn mockContext
@@ -72,17 +75,14 @@ internal class BridgeSdkTest {
         GlobalState.globalAttributes.clear()
     }
 
-    // region initialize()
+    // region initialize / nativeCrashReportEnabled
 
     @Test
-    fun `𝕄 initialize native SDK 𝕎 initialize() {native crash report enabled, site = null}`(
-        @Forgery configuration: DdSdkConfiguration
-    ) {
+    fun `𝕄 initialize native SDK 𝕎 initialize() {nativeCrashReportEnabled=true}`() {
         // Given
-        val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = true, site = null)
+        val bridgeConfiguration = fakeConfiguration.copy(nativeCrashReportEnabled = true)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
-        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
 
         // When
         testedBridgeSdk.initialize(bridgeConfiguration)
@@ -93,7 +93,652 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(configuration.trackingConsent.asTrackingConsent())
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {nativeCrashReportEnabled=false}`() {
+        // Given
+        fakeConfiguration = fakeConfiguration.copy(nativeCrashReportEnabled = false, site = null)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo("crashReportConfig", null)
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {nativeCrashReportEnabled=null}`() {
+        // Given
+        fakeConfiguration = fakeConfiguration.copy(nativeCrashReportEnabled = false, site = null)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo("crashReportConfig", null)
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    // endregion
+
+    // region initialize / sampleRate
+
+    @Test
+    fun `𝕄 initialize native with sample rate SDK 𝕎 initialize() {}`() {
+        // Given
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+        val expectedRumSampleRate = fakeConfiguration.sampleRate?.toFloat() ?: 100f
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    // endregion
+
+    // region initialize / additionalConfig
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {additionalConfig=null}`() {
+        // Given
+        fakeConfiguration = fakeConfiguration.copy(additionalConfig = null)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo("additionalConfig", emptyMap<String, Any?>())
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {additionalConfig=nonNull}`() {
+        // Given
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    // endregion
+
+    // region initialize / site
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=null}`(
+        forge: Forge
+    ) {
+        // Given
+        fakeConfiguration = fakeConfiguration.copy(site = null, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=us1}`(
+        forge: Forge
+    ) {
+        // Given
+        val site = forge.randomizeCase("us1")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=us3}`(
+        forge: Forge
+    ) {
+        // Given
+        val site = forge.randomizeCase("us3")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US3)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US3)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US3)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US3)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=us5}`(
+        forge: Forge
+    ) {
+        // Given
+        val site = forge.randomizeCase("us5")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US5)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US5)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US5)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US5)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=us1_fed}`(
+        forge: Forge
+    ) {
+        // Given
+        val site = forge.randomizeCase("us1_fed")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US1_FED)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US1_FED)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US1_FED)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US1_FED)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=eu1}`(
+        forge: Forge
+    ) {
+        // Given
+        val site = forge.randomizeCase("eu1")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_EU1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_EU1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_EU1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_EU1)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    // endregion
+
+    // region initialize / site (legacy)
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=us}`(
+        forge: Forge
+    ) {
+        // Given
+        val site = forge.randomizeCase("us")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -110,40 +755,40 @@ internal class BridgeSdkTest {
             }
             .hasField("tracesConfig") {
                 it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
             }
             .hasField("crashReportConfig") {
                 it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
             }
-            .hasField("rumConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
-            }
             .hasFieldEqualTo(
                 "additionalConfig",
-                configuration.additionalConfig?.filterValues { it != null }
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
             )
         val credentials = credentialCaptor.firstValue
-        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
-        assertThat(credentials.envName).isEqualTo(configuration.env)
-        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
         assertThat(credentials.variant).isEqualTo("")
     }
 
+    @Suppress("DEPRECATION")
     @Test
-    fun `𝕄 initialize native SDK 𝕎 initialize() {native crash report disabled, site = null}`(
-        @Forgery configuration: DdSdkConfiguration
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=gov}`(
+        forge: Forge
     ) {
         // Given
-        val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = false, site = null)
+        val site = forge.randomizeCase("gov")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
         val credentialCaptor = argumentCaptor<Credentials>()
         val configCaptor = argumentCaptor<Configuration>()
-        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
 
         // When
-        testedBridgeSdk.initialize(bridgeConfiguration)
+        testedBridgeSdk.initialize(fakeConfiguration)
 
         // Then
         inOrder(mockDatadog) {
@@ -151,273 +796,7 @@ internal class BridgeSdkTest {
                 same(mockContext),
                 credentialCaptor.capture(),
                 configCaptor.capture(),
-                eq(configuration.trackingConsent.asTrackingConsent())
-            )
-            verify(mockDatadog).registerRumMonitor(any())
-        }
-        assertThat(configCaptor.firstValue)
-            .hasField("coreConfig") {
-                it.hasFieldEqualTo("needsClearTextHttp", false)
-                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
-                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
-                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
-            }
-            .hasField("logsConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasField("tracesConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasFieldEqualTo("crashReportConfig", null)
-            .hasField("rumConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
-            }
-            .hasFieldEqualTo(
-                "additionalConfig",
-                configuration.additionalConfig?.filterValues { it != null }
-            )
-        val credentials = credentialCaptor.firstValue
-        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
-        assertThat(credentials.envName).isEqualTo(configuration.env)
-        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
-        assertThat(credentials.variant).isEqualTo("")
-    }
-
-    @Test
-    fun `𝕄 initialize native SDK 𝕎 initialize() {native crash report null, site = null}`(
-        @Forgery configuration: DdSdkConfiguration
-    ) {
-        // Given
-        val bridgeConfiguration = configuration.copy(nativeCrashReportEnabled = null, site = null)
-        val credentialCaptor = argumentCaptor<Credentials>()
-        val configCaptor = argumentCaptor<Configuration>()
-        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
-
-        // When
-        testedBridgeSdk.initialize(bridgeConfiguration)
-
-        // Then
-        inOrder(mockDatadog) {
-            verify(mockDatadog).initialize(
-                same(mockContext),
-                credentialCaptor.capture(),
-                configCaptor.capture(),
-                eq(configuration.trackingConsent.asTrackingConsent())
-            )
-            verify(mockDatadog).registerRumMonitor(any())
-        }
-        assertThat(configCaptor.firstValue)
-            .hasField("coreConfig") {
-                it.hasFieldEqualTo("needsClearTextHttp", false)
-                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
-                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
-                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
-            }
-            .hasField("logsConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasField("tracesConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasFieldEqualTo("crashReportConfig", null)
-            .hasField("rumConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
-            }
-            .hasFieldEqualTo(
-                "additionalConfig",
-                configuration.additionalConfig?.filterValues { it != null }
-            )
-        val credentials = credentialCaptor.firstValue
-        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
-        assertThat(credentials.envName).isEqualTo(configuration.env)
-        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
-        assertThat(credentials.variant).isEqualTo("")
-    }
-
-    @Test
-    fun `𝕄 initialize native SDK 𝕎 initialize() {additionalConfig is null}`(
-        @Forgery configuration: DdSdkConfiguration
-    ) {
-        // Given
-        val bridgeConfiguration = configuration.copy(
-            additionalConfig = null,
-            nativeCrashReportEnabled = false,
-            site = null
-        )
-        val credentialCaptor = argumentCaptor<Credentials>()
-        val configCaptor = argumentCaptor<Configuration>()
-        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
-
-        // When
-        testedBridgeSdk.initialize(bridgeConfiguration)
-
-        // Then
-        inOrder(mockDatadog) {
-            verify(mockDatadog).initialize(
-                same(mockContext),
-                credentialCaptor.capture(),
-                configCaptor.capture(),
-                eq(configuration.trackingConsent.asTrackingConsent())
-            )
-            verify(mockDatadog).registerRumMonitor(any())
-        }
-        assertThat(configCaptor.firstValue)
-            .hasField("coreConfig") {
-                it.hasFieldEqualTo("needsClearTextHttp", false)
-                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
-                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
-                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
-            }
-            .hasField("logsConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasField("tracesConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasFieldEqualTo("crashReportConfig", null)
-            .hasField("rumConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
-            }
-            .hasFieldEqualTo("additionalConfig", emptyMap<String, Any>())
-        val credentials = credentialCaptor.firstValue
-        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
-        assertThat(credentials.envName).isEqualTo(configuration.env)
-        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
-        assertThat(credentials.variant).isEqualTo("")
-    }
-
-    @Test
-    fun `𝕄 initialize native SDK 𝕎 initialize() {US site}`(
-        @Forgery configuration: DdSdkConfiguration
-    ) {
-        // Given
-        val bridgeConfiguration = configuration.copy(site = "US")
-        val credentialCaptor = argumentCaptor<Credentials>()
-        val configCaptor = argumentCaptor<Configuration>()
-        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
-
-        // When
-        testedBridgeSdk.initialize(bridgeConfiguration)
-
-        // Then
-        inOrder(mockDatadog) {
-            verify(mockDatadog).initialize(
-                same(mockContext),
-                credentialCaptor.capture(),
-                configCaptor.capture(),
-                eq(configuration.trackingConsent.asTrackingConsent())
-            )
-            verify(mockDatadog).registerRumMonitor(any())
-        }
-        assertThat(configCaptor.firstValue)
-            .hasField("coreConfig") {
-                it.hasFieldEqualTo("needsClearTextHttp", false)
-                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
-                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
-                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
-            }
-            .hasField("logsConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasField("tracesConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasField("rumConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_US)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
-            }
-        val credentials = credentialCaptor.firstValue
-        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
-        assertThat(credentials.envName).isEqualTo(configuration.env)
-        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
-        assertThat(credentials.variant).isEqualTo("")
-    }
-
-    @Test
-    fun `𝕄 initialize native SDK 𝕎 initialize() {EU site}`(
-        @Forgery configuration: DdSdkConfiguration
-    ) {
-        // Given
-        val bridgeConfiguration = configuration.copy(site = "EU")
-        val credentialCaptor = argumentCaptor<Credentials>()
-        val configCaptor = argumentCaptor<Configuration>()
-        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
-
-        // When
-        testedBridgeSdk.initialize(bridgeConfiguration)
-
-        // Then
-        inOrder(mockDatadog) {
-            verify(mockDatadog).initialize(
-                same(mockContext),
-                credentialCaptor.capture(),
-                configCaptor.capture(),
-                eq(configuration.trackingConsent.asTrackingConsent())
-            )
-            verify(mockDatadog).registerRumMonitor(any())
-        }
-        assertThat(configCaptor.firstValue)
-            .hasField("coreConfig") {
-                it.hasFieldEqualTo("needsClearTextHttp", false)
-                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
-                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
-                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
-            }
-            .hasField("logsConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_EU)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasField("tracesConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_EU)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-            }
-            .hasField("rumConfig") {
-                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_EU)
-                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
-            }
-        val credentials = credentialCaptor.firstValue
-        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
-        assertThat(credentials.envName).isEqualTo(configuration.env)
-        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
-        assertThat(credentials.variant).isEqualTo("")
-    }
-
-    @Test
-    fun `𝕄 initialize native SDK 𝕎 initialize() {GOV site}`(
-        @Forgery configuration: DdSdkConfiguration
-    ) {
-        // Given
-        val bridgeConfiguration = configuration.copy(site = "GOV")
-        val credentialCaptor = argumentCaptor<Credentials>()
-        val configCaptor = argumentCaptor<Configuration>()
-        val expectedRumSampleRate = bridgeConfiguration.sampleRate?.toFloat() ?: 100f
-
-        // When
-        testedBridgeSdk.initialize(bridgeConfiguration)
-
-        // Then
-        inOrder(mockDatadog) {
-            verify(mockDatadog).initialize(
-                same(mockContext),
-                credentialCaptor.capture(),
-                configCaptor.capture(),
-                eq(configuration.trackingConsent.asTrackingConsent())
+                any()
             )
             verify(mockDatadog).registerRumMonitor(any())
         }
@@ -439,15 +818,182 @@ internal class BridgeSdkTest {
             .hasField("rumConfig") {
                 it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_GOV)
                 it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
-                it.hasFieldEqualTo("samplingRate", expectedRumSampleRate)
             }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_GOV)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
         val credentials = credentialCaptor.firstValue
-        assertThat(credentials.clientToken).isEqualTo(configuration.clientToken)
-        assertThat(credentials.envName).isEqualTo(configuration.env)
-        assertThat(credentials.rumApplicationId).isEqualTo(configuration.applicationId)
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
         assertThat(credentials.variant).isEqualTo("")
-        assertThat(credentials.serviceName).isNull()
     }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {site=eu}`(
+        forge: Forge
+    ) {
+        // Given
+        val site = forge.randomizeCase("eu")
+        fakeConfiguration = fakeConfiguration.copy(site = site, nativeCrashReportEnabled = true)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                any()
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") {
+                it.hasFieldEqualTo("needsClearTextHttp", false)
+                it.hasFieldEqualTo("firstPartyHosts", emptyList<String>())
+                it.hasFieldEqualTo("batchSize", BatchSize.MEDIUM)
+                it.hasFieldEqualTo("uploadFrequency", UploadFrequency.AVERAGE)
+            }
+            .hasField("logsConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_EU)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("tracesConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.TRACES_EU)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("rumConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.RUM_EU)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasField("crashReportConfig") {
+                it.hasFieldEqualTo("endpointUrl", DatadogEndpoint.LOGS_EU)
+                it.hasFieldEqualTo("plugins", emptyList<DatadogPlugin>())
+            }
+            .hasFieldEqualTo(
+                "additionalConfig",
+                fakeConfiguration.additionalConfig?.filterValues { it != null }.orEmpty()
+            )
+        val credentials = credentialCaptor.firstValue
+        assertThat(credentials.clientToken).isEqualTo(fakeConfiguration.clientToken)
+        assertThat(credentials.envName).isEqualTo(fakeConfiguration.env)
+        assertThat(credentials.rumApplicationId).isEqualTo(fakeConfiguration.applicationId)
+        assertThat(credentials.variant).isEqualTo("")
+    }
+
+    // endregion
+
+    // region initialize / additionalConfig
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {trackingConsent=null}`() {
+        // Given
+        fakeConfiguration = fakeConfiguration.copy(trackingConsent = null)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.PENDING)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {trackingConsent=PENDING}`(
+        forge: Forge
+    ) {
+        // Given
+        val consent = forge.randomizeCase("PENDING")
+        fakeConfiguration = fakeConfiguration.copy(trackingConsent = consent)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.PENDING)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {trackingConsent=GRANTED}`(
+        forge: Forge
+    ) {
+        // Given
+        val consent = forge.randomizeCase("GRANTED")
+        fakeConfiguration = fakeConfiguration.copy(trackingConsent = consent)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.GRANTED)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+    }
+
+    @Test
+    fun `𝕄 initialize native SDK 𝕎 initialize() {trackingConsent=NOT_GRANTED}`(
+        forge: Forge
+    ) {
+        // Given
+        val consent = forge.randomizeCase("NOT_GRANTED")
+        fakeConfiguration = fakeConfiguration.copy(trackingConsent = consent)
+        val credentialCaptor = argumentCaptor<Credentials>()
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(fakeConfiguration)
+
+        // Then
+        inOrder(mockDatadog) {
+            verify(mockDatadog).initialize(
+                same(mockContext),
+                credentialCaptor.capture(),
+                configCaptor.capture(),
+                eq(TrackingConsent.NOT_GRANTED)
+            )
+            verify(mockDatadog).registerRumMonitor(any())
+        }
+    }
+
+    // endregion
 
     @Test
     fun `𝕄 initialize native SDK 𝕎 initialize() {no view tracking by default}`(

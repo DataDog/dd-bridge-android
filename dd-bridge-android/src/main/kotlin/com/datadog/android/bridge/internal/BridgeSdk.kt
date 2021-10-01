@@ -8,6 +8,7 @@ package com.datadog.android.bridge.internal
 
 import android.content.Context
 import android.util.Log
+import com.datadog.android.DatadogSite
 import com.datadog.android.bridge.DdSdk
 import com.datadog.android.bridge.DdSdkConfiguration
 import com.datadog.android.core.configuration.Configuration
@@ -91,13 +92,7 @@ internal class BridgeSdk(
             configBuilder.sampleRumSessions(configuration.sampleRate.toFloat())
         }
 
-        if (configuration.site.equals("US", ignoreCase = true)) {
-            configBuilder.useUSEndpoints()
-        } else if (configuration.site.equals("EU", ignoreCase = true)) {
-            configBuilder.useEUEndpoints()
-        } else if (configuration.site.equals("GOV", ignoreCase = true)) {
-            configBuilder.useGovEndpoints()
-        }
+        configBuilder.useSite(buildSite(configuration.site))
 
         val viewTracking = configuration.additionalConfig?.get(DD_NATIVE_VIEW_TRACKING) as? Boolean
         if (viewTracking == true) {
@@ -139,6 +134,18 @@ internal class BridgeSdk(
                 )
                 TrackingConsent.PENDING
             }
+        }
+    }
+
+    private fun buildSite(site: String?): DatadogSite {
+        val siteLower = site?.toLowerCase(Locale.US)
+        return when (siteLower) {
+            "us1", "us" -> DatadogSite.US1
+            "eu1", "eu" -> DatadogSite.EU1
+            "us3" -> DatadogSite.US3
+            "us5" -> DatadogSite.US5
+            "us1_fed", "gov" -> DatadogSite.US1_FED
+            else -> DatadogSite.US1
         }
     }
 
