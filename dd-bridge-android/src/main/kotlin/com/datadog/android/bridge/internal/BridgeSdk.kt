@@ -105,7 +105,8 @@ internal class BridgeSdk(
             configBuilder.useViewTrackingStrategy(NoOpViewTrackingStrategy)
         }
 
-        val longTask = configuration.additionalConfig?.get(DD_LONG_TASK_THRESHOLD) as? Long
+        val longTask =
+            (configuration.additionalConfig?.get(DD_LONG_TASK_THRESHOLD) as? Number)?.toLong()
         if (longTask != null) {
             configBuilder.trackLongTasks(longTask)
         }

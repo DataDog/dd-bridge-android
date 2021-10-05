@@ -27,7 +27,6 @@ import fr.xgouchet.elmyr.Forge
 import fr.xgouchet.elmyr.annotation.AdvancedForgery
 import fr.xgouchet.elmyr.annotation.Forgery
 import fr.xgouchet.elmyr.annotation.IntForgery
-import fr.xgouchet.elmyr.annotation.LongForgery
 import fr.xgouchet.elmyr.annotation.MapForgery
 import fr.xgouchet.elmyr.annotation.StringForgery
 import fr.xgouchet.elmyr.annotation.StringForgeryType
@@ -1165,8 +1164,14 @@ internal class BridgeSdkTest {
     @Test
     fun `𝕄 set long task threshold 𝕎 initialize() {custom long task threshold}`(
         @Forgery configuration: DdSdkConfiguration,
-        @LongForgery(0, 65536) threshold: Long
+        forge: Forge
     ) {
+        // floating-point type (coming from JS) and integer type (other frameworks)
+        val threshold = forge.anElementFrom(
+            forge.aLong(min = 0, max = 65536),
+            forge.aDouble(min = 0.0, max = 65536.0)
+        )
+
         // Given
         val bridgeConfiguration = configuration.copy(
             additionalConfig = mapOf(
@@ -1194,7 +1199,7 @@ internal class BridgeSdkTest {
                             "com.datadog.android.rum.internal.instrumentation." +
                                 "MainLooperLongTaskStrategy"
                         )
-                        .hasFieldEqualTo("thresholdMs", threshold)
+                        .hasFieldEqualTo("thresholdMs", threshold.toLong())
                 }
             }
     }
