@@ -147,41 +147,41 @@ internal class BridgeSdk(
 
     internal fun buildProxyConfiguration(configuration: DdSdkConfiguration):
         Pair<Proxy, ProxyAuthenticator?>? {
-            val additionalConfig = configuration.additionalConfig ?: return null
+        val additionalConfig = configuration.additionalConfig ?: return null
 
-            val address = additionalConfig[DD_PROXY_ADDRESS] as? String
-            val port = (additionalConfig[DD_PROXY_PORT] as? Number)?.toInt()
-            val type = (additionalConfig[DD_PROXY_TYPE] as? String)?.let {
-                when (it.toLowerCase(Locale.US)) {
-                    "http", "https" -> Proxy.Type.HTTP
-                    "socks" -> Proxy.Type.SOCKS
-                    else -> {
-                        Log.w(
-                            BridgeSdk::class.java.canonicalName,
-                            "Unknown proxy type given: $it, skipping proxy configuration."
-                        )
-                        null
-                    }
+        val address = additionalConfig[DD_PROXY_ADDRESS] as? String
+        val port = (additionalConfig[DD_PROXY_PORT] as? Number)?.toInt()
+        val type = (additionalConfig[DD_PROXY_TYPE] as? String)?.let {
+            when (it.toLowerCase(Locale.US)) {
+                "http", "https" -> Proxy.Type.HTTP
+                "socks" -> Proxy.Type.SOCKS
+                else -> {
+                    Log.w(
+                        BridgeSdk::class.java.canonicalName,
+                        "Unknown proxy type given: $it, skipping proxy configuration."
+                    )
+                    null
                 }
             }
-
-            val proxy = if (address != null && port != null && type != null) {
-                Proxy(type, InetSocketAddress(address, port))
-            } else {
-                return null
-            }
-
-            val username = additionalConfig[DD_PROXY_USERNAME] as? String
-            val password = additionalConfig[DD_PROXY_PASSWORD] as? String
-
-            val authenticator = if (username != null && password != null) {
-                ProxyAuthenticator(username, password)
-            } else {
-                null
-            }
-
-            return Pair(proxy, authenticator)
         }
+
+        val proxy = if (address != null && port != null && type != null) {
+            Proxy(type, InetSocketAddress(address, port))
+        } else {
+            return null
+        }
+
+        val username = additionalConfig[DD_PROXY_USERNAME] as? String
+        val password = additionalConfig[DD_PROXY_PASSWORD] as? String
+
+        val authenticator = if (username != null && password != null) {
+            ProxyAuthenticator(username, password)
+        } else {
+            null
+        }
+
+        return Pair(proxy, authenticator)
+    }
 
     private fun buildSite(site: String?): DatadogSite {
         val siteLower = site?.toLowerCase(Locale.US)

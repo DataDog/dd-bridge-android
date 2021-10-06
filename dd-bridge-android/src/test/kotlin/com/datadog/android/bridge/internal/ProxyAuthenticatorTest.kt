@@ -41,10 +41,10 @@ internal class ProxyAuthenticatorTest {
         // Given
         val response = forge.proxyResponse(
             statusCode =
-                forge.anElementFrom(
-                    forge.anInt(min = 100, max = 407),
-                    forge.anInt(min = 408, max = 600)
-                )
+            forge.anElementFrom(
+                forge.anInt(min = 100, max = 407),
+                forge.anInt(min = 408, max = 600)
+            )
         )
 
         // When
