@@ -47,8 +47,9 @@ android {
     defaultConfig {
         minSdkVersion(AndroidConfig.MIN_SDK)
         targetSdkVersion(AndroidConfig.TARGET_SDK)
-        versionCode = AndroidConfig.VERSION.code
-        versionName = AndroidConfig.VERSION.name
+
+        buildConfigField("int", "BRIDGE_VERSION_CODE", "${AndroidConfig.VERSION.code}")
+        buildConfigField("String", "BRIDGE_VERSION_NAME", "\"${AndroidConfig.VERSION.name}\"")
     }
 
     sourceSets.named("main") {
