@@ -41,12 +41,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion(AndroidConfig.TARGET_SDK)
-    buildToolsVersion(AndroidConfig.BUILD_TOOLS_VERSION)
+    compileSdk = AndroidConfig.TARGET_SDK
+    buildToolsVersion = AndroidConfig.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        minSdkVersion(AndroidConfig.MIN_SDK)
-        targetSdkVersion(AndroidConfig.TARGET_SDK)
+        minSdk = AndroidConfig.MIN_SDK
+        targetSdk = AndroidConfig.TARGET_SDK
 
         buildConfigField("int", "BRIDGE_VERSION_CODE", "${AndroidConfig.VERSION.code}")
         buildConfigField("String", "BRIDGE_VERSION_NAME", "\"${AndroidConfig.VERSION.name}\"")
