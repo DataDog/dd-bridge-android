@@ -17,11 +17,11 @@ buildscript {
     }
 
     dependencies {
-        classpath(com.datadog.gradle.Dependencies.ClassPaths.AndroidTools)
-        classpath(com.datadog.gradle.Dependencies.ClassPaths.Kotlin)
-        classpath(com.datadog.gradle.Dependencies.ClassPaths.KtLint)
-        classpath(com.datadog.gradle.Dependencies.ClassPaths.Dokka)
-        classpath(com.datadog.gradle.Dependencies.ClassPaths.Unmock)
+        classpath(libs.androidToolsPluginGradle)
+        classpath(libs.kotlinPluginGradle)
+        classpath(libs.ktLintPluginGradle)
+        classpath(libs.dokkaPluginGradle)
+        classpath(libs.unmockPluginGradle)
     }
 }
 

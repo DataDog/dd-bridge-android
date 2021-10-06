@@ -6,23 +6,30 @@
 
 package com.datadog.gradle.utils
 
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 
 class VersionTest {
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun checkMajorInRange() {
-        Version(Version.MAX_MAJOR, 0, 0)
+        assertThrows(IllegalArgumentException::class.java) {
+            Version(Version.MAX_MAJOR, 0, 0)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun checkMinorInRange() {
-        Version(0, Version.MAX_MINOR, 0)
+        assertThrows(IllegalArgumentException::class.java) {
+            Version(0, Version.MAX_MINOR, 0)
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test
     fun checkHotfixInRange() {
-        Version(0, 0, Version.MAX_HOTFIX)
+        assertThrows(IllegalArgumentException::class.java) {
+            Version(0, 0, Version.MAX_HOTFIX)
+        }
     }
 
     @Test

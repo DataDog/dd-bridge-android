@@ -8,23 +8,21 @@ package com.datadog.gradle.plugin.apisurface
 
 import java.io.File
 import java.lang.IllegalStateException
-import junit.framework.Assert.assertEquals
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 internal class KotlinFileVisitorTest {
 
-    @get:Rule
-    val tempDir = TemporaryFolder()
     lateinit var tempFile: File
 
     lateinit var testedVisitor: KotlinFileVisitor
 
-    @Before
-    fun `set up`() {
-        tempFile = tempDir.newFile(FILE_NAME)
+    @BeforeEach
+    fun `set up`(@TempDir tempDir: File) {
+        tempFile = File(tempDir, FILE_NAME)
         testedVisitor = KotlinFileVisitor()
     }
 
@@ -672,10 +670,11 @@ internal class KotlinFileVisitorTest {
         )
     }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun `throw error on implicit type`() {
-        tempFile.writeText(
-            """
+        assertThrows(IllegalStateException::class.java) {
+            tempFile.writeText(
+                """
             package foo.bar
             class Spam {
                 companion object {
@@ -683,9 +682,10 @@ internal class KotlinFileVisitorTest {
                 }
             }
             """.trimIndent()
-        )
+            )
 
-        testedVisitor.visitFile(tempFile)
+            testedVisitor.visitFile(tempFile)
+        }
     }
 
     @Test

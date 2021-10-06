@@ -4,4 +4,5 @@
  * Copyright 2016-Present Datadog, Inc.
  */
 
+enableFeaturePreview("VERSION_CATALOGS")
 include(":dd-bridge-android")

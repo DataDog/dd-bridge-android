@@ -4,7 +4,6 @@
  * Copyright 2016-Present Datadog, Inc.
  */
 
-import com.datadog.gradle.Dependencies
 import com.datadog.gradle.config.AndroidConfig
 import com.datadog.gradle.config.dependencyUpdateConfig
 import com.datadog.gradle.config.detektConfig
@@ -14,7 +13,6 @@ import com.datadog.gradle.config.junitConfig
 import com.datadog.gradle.config.kotlinConfig
 import com.datadog.gradle.config.ktLintConfig
 import com.datadog.gradle.config.publishingConfig
-import com.datadog.gradle.testImplementation
 
 plugins {
 
@@ -77,17 +75,17 @@ android {
 }
 
 dependencies {
-    implementation(Dependencies.Libraries.DatadogSdk)
-    implementation(Dependencies.Libraries.Kotlin)
+    implementation(libs.datadogSdk)
+    implementation(libs.kotlin)
     // okhttp will be available in runtime with Datadog SDK, we don't want to include it in the
     // build output for the bridge
-    compileOnly(Dependencies.Libraries.OkHttp)
+    compileOnly(libs.okHttp)
 
-    testImplementation(Dependencies.Libraries.JUnit5)
-    testImplementation(Dependencies.Libraries.TestTools)
-    testImplementation(Dependencies.Libraries.OkHttpMock)
+    testImplementation(libs.bundles.jUnit5)
+    testImplementation(libs.bundles.testTools)
+    testImplementation(libs.okHttpMock)
 
-    detekt(Dependencies.Libraries.DetektCli)
+    detekt(libs.detektCli)
 }
 
 kotlinConfig()
