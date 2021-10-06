@@ -145,7 +145,7 @@ internal class BridgeRum : DdRum {
     // region Internal
 
     private fun String.asRumActionType(): RumActionType {
-        return when (toLowerCase(Locale.US)) {
+        return when (lowercase(Locale.US)) {
             "tap" -> RumActionType.TAP
             "scroll" -> RumActionType.SCROLL
             "swipe" -> RumActionType.SWIPE
@@ -155,7 +155,7 @@ internal class BridgeRum : DdRum {
     }
 
     private fun String.asRumResourceKind(): RumResourceKind {
-        return when (toLowerCase(Locale.US)) {
+        return when (lowercase(Locale.US)) {
             "xhr" -> RumResourceKind.XHR
             "native" -> RumResourceKind.NATIVE
             "fetch" -> RumResourceKind.FETCH
@@ -172,7 +172,7 @@ internal class BridgeRum : DdRum {
     }
 
     private fun String.asErrorSource(): RumErrorSource {
-        return when (toLowerCase(Locale.US)) {
+        return when (lowercase(Locale.US)) {
             "agent" -> RumErrorSource.AGENT
             "console" -> RumErrorSource.CONSOLE
             "logger" -> RumErrorSource.LOGGER
