@@ -9,7 +9,7 @@ package com.datadog.gradle
 object Dependencies {
 
     object Versions {
-        const val Jacoco = "0.8.4"
+        const val Jacoco = "0.8.7"
     }
 
     object Repositories {
