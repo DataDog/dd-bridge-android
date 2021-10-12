@@ -5,7 +5,7 @@ gson = "2.8.6"
 okHttp = "3.12.13"
 
 # Android
-androidToolsPlugin = "7.0.2"
+androidToolsPlugin = "7.0.3"
 
 # JUnit
 jUnitJupiter = "5.6.2"
