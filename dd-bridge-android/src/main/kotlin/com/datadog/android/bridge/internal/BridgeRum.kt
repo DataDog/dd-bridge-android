@@ -19,8 +19,8 @@ internal class BridgeRum : DdRum {
     override fun startView(
         key: String,
         name: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
@@ -32,7 +32,7 @@ internal class BridgeRum : DdRum {
         )
     }
 
-    override fun stopView(key: String, timestampMs: Long, context: Map<String, Any?>) {
+    override fun stopView(key: String, context: Map<String, Any?>, timestampMs: Long) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
         }
@@ -45,8 +45,8 @@ internal class BridgeRum : DdRum {
     override fun startAction(
         type: String,
         name: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
@@ -58,7 +58,7 @@ internal class BridgeRum : DdRum {
         )
     }
 
-    override fun stopAction(timestampMs: Long, context: Map<String, Any?>) {
+    override fun stopAction(context: Map<String, Any?>, timestampMs: Long) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
         }
@@ -70,8 +70,8 @@ internal class BridgeRum : DdRum {
     override fun addAction(
         type: String,
         name: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
@@ -87,8 +87,8 @@ internal class BridgeRum : DdRum {
         key: String,
         method: String,
         url: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
@@ -105,17 +105,23 @@ internal class BridgeRum : DdRum {
         key: String,
         statusCode: Long,
         kind: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        size: Long,
+        context: Map<String, Any?>,
+        timestampMs: Long
     ) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
+        }
+        val resourceSize = if (size == MISSING_RESOURCE_SIZE) {
+            null
+        } else {
+            size
         }
         GlobalRum.get().stopResource(
             key = key,
             statusCode = statusCode.toInt(),
             kind = kind.asRumResourceKind(),
-            size = null,
+            size = resourceSize,
             attributes = attributes
         )
     }
@@ -124,8 +130,8 @@ internal class BridgeRum : DdRum {
         message: String,
         source: String,
         stacktrace: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
@@ -184,4 +190,8 @@ internal class BridgeRum : DdRum {
     }
 
     // endregion
+
+    companion object {
+        private const val MISSING_RESOURCE_SIZE = -1L
+    }
 }

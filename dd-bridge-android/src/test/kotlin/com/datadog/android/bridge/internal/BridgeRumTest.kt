@@ -92,7 +92,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.startView(key, name, fakeTimestamp, fakeContext)
+        testedDdRum.startView(key, name, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).startView(key, name, updatedContext)
@@ -106,7 +106,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.stopView(key, fakeTimestamp, fakeContext)
+        testedDdRum.stopView(key, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).stopView(key, updatedContext)
@@ -121,7 +121,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.addAction(type.name, name, fakeTimestamp, fakeContext)
+        testedDdRum.addAction(type.name, name, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).addUserAction(type, name, updatedContext)
@@ -136,7 +136,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.addAction(type, name, fakeTimestamp, fakeContext)
+        testedDdRum.addAction(type, name, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).addUserAction(RumActionType.CUSTOM, name, updatedContext)
@@ -151,7 +151,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.startAction(type.name, name, fakeTimestamp, fakeContext)
+        testedDdRum.startAction(type.name, name, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).startUserAction(type, name, updatedContext)
@@ -166,7 +166,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.startAction(type, name, fakeTimestamp, fakeContext)
+        testedDdRum.startAction(type, name, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).startUserAction(RumActionType.CUSTOM, name, updatedContext)
@@ -178,7 +178,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.stopAction(fakeTimestamp, fakeContext)
+        testedDdRum.stopAction(fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).stopUserAction(updatedContext)
@@ -194,7 +194,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.startResource(key, method, url, fakeTimestamp, fakeContext)
+        testedDdRum.startResource(key, method, url, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).startResource(key, method, url, updatedContext)
@@ -204,6 +204,7 @@ internal class BridgeRumTest {
     fun `M call stopResource W stopResource()`(
         @StringForgery key: String,
         @IntForgery(200, 600) statusCode: Int,
+        @LongForgery(min = 0L) resourceSize: Long,
         @Forgery kind: RumResourceKind
     ) {
         // Given
@@ -214,16 +215,47 @@ internal class BridgeRumTest {
             key,
             statusCode.toLong(),
             kind.toString(),
-            fakeTimestamp,
-            fakeContext
+            resourceSize,
+            fakeContext,
+            fakeTimestamp
         )
 
         // Then
-        verify(mockRumMonitor).stopResource(key, statusCode, null, kind, updatedContext)
+        verify(mockRumMonitor).stopResource(key, statusCode, resourceSize, kind, updatedContext)
     }
 
     @Test
     fun `M call stopResource W stopResource() with invalid kind`(
+        @StringForgery key: String,
+        @IntForgery(200, 600) statusCode: Int,
+        @LongForgery(min = 0L) resourceSize: Long,
+        @StringForgery(StringForgeryType.HEXADECIMAL) kind: String
+    ) {
+        // Given
+        val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
+
+        // When
+        testedDdRum.stopResource(
+            key,
+            statusCode.toLong(),
+            kind,
+            resourceSize,
+            fakeContext,
+            fakeTimestamp
+        )
+
+        // Then
+        verify(mockRumMonitor).stopResource(
+            key,
+            statusCode,
+            resourceSize,
+            RumResourceKind.UNKNOWN,
+            updatedContext
+        )
+    }
+
+    @Test
+    fun `M call stopResource W stopResource() with missing resource size`(
         @StringForgery key: String,
         @IntForgery(200, 600) statusCode: Int,
         @StringForgery(StringForgeryType.HEXADECIMAL) kind: String
@@ -236,8 +268,9 @@ internal class BridgeRumTest {
             key,
             statusCode.toLong(),
             kind,
-            fakeTimestamp,
-            fakeContext
+            -1,
+            fakeContext,
+            fakeTimestamp
         )
 
         // Then
@@ -260,7 +293,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.addError(message, source.name, stackTrace, fakeTimestamp, fakeContext)
+        testedDdRum.addError(message, source.name, stackTrace, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).addErrorWithStacktrace(message, source, stackTrace, updatedContext)
@@ -276,7 +309,7 @@ internal class BridgeRumTest {
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.addError(message, source, stackTrace, fakeTimestamp, fakeContext)
+        testedDdRum.addError(message, source, stackTrace, fakeContext, fakeTimestamp)
 
         // Then
         verify(mockRumMonitor).addErrorWithStacktrace(

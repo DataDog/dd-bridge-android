@@ -100,7 +100,7 @@ internal class BridgeTraceTest {
     @Test
     fun `M start a span W startSpan() `() {
         // When
-        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, emptyMap())
+        val id = testedTrace.startSpan(fakeOperation, emptyMap(), fakeTimestamp)
 
         // Then
         assertThat(id).isEqualTo(fakeSpanId)
@@ -118,8 +118,8 @@ internal class BridgeTraceTest {
         val endTimestamp = fakeTimestamp + duration
 
         // When
-        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, emptyMap())
-        testedTrace.finishSpan(id, endTimestamp, emptyMap())
+        val id = testedTrace.startSpan(fakeOperation, emptyMap(), fakeTimestamp)
+        testedTrace.finishSpan(id, emptyMap(), endTimestamp)
 
         // Then
         assertThat(id).isEqualTo(fakeSpanId)
@@ -136,8 +136,8 @@ internal class BridgeTraceTest {
         val endTimestamp = fakeTimestamp + duration
 
         // When
-        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, emptyMap())
-        testedTrace.finishSpan(otherSpanId, endTimestamp, emptyMap())
+        val id = testedTrace.startSpan(fakeOperation, emptyMap(), fakeTimestamp)
+        testedTrace.finishSpan(otherSpanId, emptyMap(), endTimestamp)
 
         // Then
         assertThat(id).isEqualTo(fakeSpanId)
@@ -152,8 +152,8 @@ internal class BridgeTraceTest {
         val endTimestamp = fakeTimestamp + duration
 
         // When
-        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, fakeContext)
-        testedTrace.finishSpan(id, endTimestamp, emptyMap())
+        val id = testedTrace.startSpan(fakeOperation, fakeContext, fakeTimestamp)
+        testedTrace.finishSpan(id, emptyMap(), endTimestamp)
 
         // Then
         assertThat(id).isEqualTo(fakeSpanId)
@@ -173,8 +173,8 @@ internal class BridgeTraceTest {
         val endTimestamp = fakeTimestamp + duration
 
         // When
-        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, emptyMap())
-        testedTrace.finishSpan(id, endTimestamp, fakeContext)
+        val id = testedTrace.startSpan(fakeOperation, emptyMap(), fakeTimestamp)
+        testedTrace.finishSpan(id, fakeContext, endTimestamp)
 
         // Then
         assertThat(id).isEqualTo(fakeSpanId)
@@ -197,8 +197,8 @@ internal class BridgeTraceTest {
         fakeGlobalState.forEach { (k, v) ->
             GlobalState.addAttribute(k, v)
         }
-        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, fakeContext)
-        testedTrace.finishSpan(id, endTimestamp, emptyMap())
+        val id = testedTrace.startSpan(fakeOperation, fakeContext, fakeTimestamp)
+        testedTrace.finishSpan(id, emptyMap(), endTimestamp)
 
         // Then
         assertThat(id).isEqualTo(fakeSpanId)
@@ -222,11 +222,11 @@ internal class BridgeTraceTest {
         val expectedAttributes = fakeContext + fakeGlobalState
 
         // When
-        val id = testedTrace.startSpan(fakeOperation, fakeTimestamp, emptyMap())
+        val id = testedTrace.startSpan(fakeOperation, emptyMap(), fakeTimestamp)
         fakeGlobalState.forEach { (k, v) ->
             GlobalState.addAttribute(k, v)
         }
-        testedTrace.finishSpan(id, endTimestamp, fakeContext)
+        testedTrace.finishSpan(id, fakeContext, endTimestamp)
 
         // Then
         assertThat(id).isEqualTo(fakeSpanId)

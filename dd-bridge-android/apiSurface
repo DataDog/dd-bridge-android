@@ -9,14 +9,14 @@ interface com.datadog.android.bridge.DdLogs
   fun warn(String, Map<String, Any?>): Unit
   fun error(String, Map<String, Any?>): Unit
 interface com.datadog.android.bridge.DdRum
-  fun startView(String, String, Long, Map<String, Any?>): Unit
-  fun stopView(String, Long, Map<String, Any?>): Unit
-  fun startAction(String, String, Long, Map<String, Any?>): Unit
-  fun stopAction(Long, Map<String, Any?>): Unit
-  fun addAction(String, String, Long, Map<String, Any?>): Unit
-  fun startResource(String, String, String, Long, Map<String, Any?>): Unit
-  fun stopResource(String, Long, String, Long, Map<String, Any?>): Unit
-  fun addError(String, String, String, Long, Map<String, Any?>): Unit
+  fun startView(String, String, Map<String, Any?>, Long): Unit
+  fun stopView(String, Map<String, Any?>, Long): Unit
+  fun startAction(String, String, Map<String, Any?>, Long): Unit
+  fun stopAction(Map<String, Any?>, Long): Unit
+  fun addAction(String, String, Map<String, Any?>, Long): Unit
+  fun startResource(String, String, String, Map<String, Any?>, Long): Unit
+  fun stopResource(String, Long, String, Long, Map<String, Any?>, Long): Unit
+  fun addError(String, String, String, Map<String, Any?>, Long): Unit
   fun addTiming(String): Unit
 interface com.datadog.android.bridge.DdSdk
   fun initialize(DdSdkConfiguration): Unit
@@ -26,8 +26,8 @@ interface com.datadog.android.bridge.DdSdk
 class com.datadog.android.bridge.DdSdkConfiguration
   constructor(String, String, String? = null, Boolean? = null, Double? = null, String? = null, String? = null, Map<String, Any?>? = null)
 interface com.datadog.android.bridge.DdTrace
-  fun startSpan(String, Long, Map<String, Any?>): String
-  fun finishSpan(String, Long, Map<String, Any?>): Unit
+  fun startSpan(String, Map<String, Any?>, Long): String
+  fun finishSpan(String, Map<String, Any?>, Long): Unit
 object com.datadog.android.bridge.internal.NoOpViewTrackingStrategy : com.datadog.android.rum.tracking.ViewTrackingStrategy
   override fun register(android.content.Context)
   override fun unregister(android.content.Context?)

@@ -14,10 +14,10 @@ interface DdTrace {
     /**
      * Start a span, and returns a unique identifier for the span.
      */
-    fun startSpan(operation: String, timestampMs: Long, context: Map<String, Any?>): String
+    fun startSpan(operation: String, context: Map<String, Any?>, timestampMs: Long): String
 
     /**
      * Finish a started span.
      */
-    fun finishSpan(spanId: String, timestampMs: Long, context: Map<String, Any?>): Unit
+    fun finishSpan(spanId: String, context: Map<String, Any?>, timestampMs: Long): Unit
 }
