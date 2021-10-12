@@ -20,12 +20,12 @@ fun Project.jacocoConfig() {
         JacocoReport::class.java
     )
     jacocoTestDebugUnitTestReport.reports {
-        csv.isEnabled = false
-        xml.isEnabled = true
-        html.isEnabled = true
-        html.destination = file(
+        csv.required.set(false)
+        xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(file(
             "${buildDir.path}/reports/jacoco/jacocoTestDebugUnitTestReport/html"
-        )
+        ))
     }
 
     val jacocoTestReleaseUnitTestReport = tasks.create(
@@ -33,12 +33,12 @@ fun Project.jacocoConfig() {
         JacocoReport::class.java
     )
     jacocoTestReleaseUnitTestReport.reports {
-        csv.isEnabled = false
-        xml.isEnabled = true
-        html.isEnabled = true
-        html.destination = file(
+        csv.required.set(false)
+        xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(file(
             "${buildDir.path}/reports/jacoco/jacocoTestReleaseUnitTestReport/html"
-        )
+        ))
     }
 
     val jacocoTestCoverageVerification =
@@ -84,7 +84,7 @@ fun Project.jacocoConfig() {
 
     extensionConfig<JacocoPluginExtension> {
         toolVersion = Dependencies.Versions.Jacoco
-        reportsDir = file("$buildDir/jacoco") // Jacoco's output root.
+        reportsDirectory.set(file("$buildDir/jacoco")) // Jacoco's output root.
     }
 
     tasks.named("check") {

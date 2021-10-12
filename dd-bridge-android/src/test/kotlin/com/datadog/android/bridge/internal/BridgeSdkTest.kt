@@ -1503,7 +1503,7 @@ internal class BridgeSdkTest {
         // Given
 
         val proxyType = forge.anAlphabeticalString()
-        assumeTrue(proxyType.toLowerCase(Locale.US) !in arrayOf("http", "https", "socks"))
+        assumeTrue(proxyType.lowercase(Locale.US) !in arrayOf("http", "https", "socks"))
 
         val additionalConfig = mapOf(
             BridgeSdk.DD_PROXY_TYPE to proxyType,
@@ -1637,7 +1637,7 @@ internal class BridgeSdkTest {
     // region Internal
 
     private fun String?.asTrackingConsent(): TrackingConsent {
-        return when (this?.toLowerCase(Locale.US)) {
+        return when (this?.lowercase(Locale.US)) {
             "pending" -> TrackingConsent.PENDING
             "granted" -> TrackingConsent.GRANTED
             "not_granted" -> TrackingConsent.NOT_GRANTED

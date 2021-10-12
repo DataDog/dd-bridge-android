@@ -4,7 +4,6 @@
  * Copyright 2016-Present Datadog, Inc.
  */
 
-import com.datadog.gradle.Dependencies
 import com.datadog.gradle.config.AndroidConfig
 import com.datadog.gradle.config.dependencyUpdateConfig
 import com.datadog.gradle.config.detektConfig
@@ -14,7 +13,6 @@ import com.datadog.gradle.config.junitConfig
 import com.datadog.gradle.config.kotlinConfig
 import com.datadog.gradle.config.ktLintConfig
 import com.datadog.gradle.config.publishingConfig
-import com.datadog.gradle.testImplementation
 
 plugins {
 
@@ -43,14 +41,15 @@ plugins {
 }
 
 android {
-    compileSdkVersion(AndroidConfig.TARGET_SDK)
-    buildToolsVersion(AndroidConfig.BUILD_TOOLS_VERSION)
+    compileSdk = AndroidConfig.TARGET_SDK
+    buildToolsVersion = AndroidConfig.BUILD_TOOLS_VERSION
 
     defaultConfig {
-        minSdkVersion(AndroidConfig.MIN_SDK)
-        targetSdkVersion(AndroidConfig.TARGET_SDK)
-        versionCode = AndroidConfig.VERSION.code
-        versionName = AndroidConfig.VERSION.name
+        minSdk = AndroidConfig.MIN_SDK
+        targetSdk = AndroidConfig.TARGET_SDK
+
+        buildConfigField("int", "BRIDGE_VERSION_CODE", "${AndroidConfig.VERSION.code}")
+        buildConfigField("String", "BRIDGE_VERSION_NAME", "\"${AndroidConfig.VERSION.name}\"")
     }
 
     sourceSets.named("main") {
@@ -77,17 +76,17 @@ android {
 }
 
 dependencies {
-    implementation(Dependencies.Libraries.DatadogSdk)
-    implementation(Dependencies.Libraries.Kotlin)
+    implementation(libs.datadogSdk)
+    implementation(libs.kotlin)
     // okhttp will be available in runtime with Datadog SDK, we don't want to include it in the
     // build output for the bridge
-    compileOnly(Dependencies.Libraries.OkHttp)
+    compileOnly(libs.okHttp)
 
-    testImplementation(Dependencies.Libraries.JUnit5)
-    testImplementation(Dependencies.Libraries.TestTools)
-    testImplementation(Dependencies.Libraries.OkHttpMock)
+    testImplementation(libs.bundles.jUnit5)
+    testImplementation(libs.bundles.testTools)
+    testImplementation(libs.okHttpMock)
 
-    detekt(Dependencies.Libraries.DetektCli)
+    detekt(libs.detektCli)
 }
 
 kotlinConfig()

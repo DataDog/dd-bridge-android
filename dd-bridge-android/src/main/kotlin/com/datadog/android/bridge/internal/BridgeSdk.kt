@@ -66,7 +66,7 @@ internal class BridgeSdk(
 
     private fun configureSdkVerbosity(configuration: DdSdkConfiguration) {
         val verbosityConfig = configuration.additionalConfig?.get(DD_SDK_VERBOSITY) as? String
-        val verbosity = when (verbosityConfig?.toLowerCase(Locale.US)) {
+        val verbosity = when (verbosityConfig?.lowercase(Locale.US)) {
             "debug" -> Log.DEBUG
             "info" -> Log.INFO
             "warn" -> Log.WARN
@@ -130,7 +130,7 @@ internal class BridgeSdk(
     }
 
     internal fun buildTrackingConsent(trackingConsent: String?): TrackingConsent {
-        return when (trackingConsent?.toLowerCase(Locale.US)) {
+        return when (trackingConsent?.lowercase(Locale.US)) {
             "pending" -> TrackingConsent.PENDING
             "granted" -> TrackingConsent.GRANTED
             "not_granted" -> TrackingConsent.NOT_GRANTED
@@ -147,44 +147,44 @@ internal class BridgeSdk(
 
     internal fun buildProxyConfiguration(configuration: DdSdkConfiguration):
         Pair<Proxy, ProxyAuthenticator?>? {
-            val additionalConfig = configuration.additionalConfig ?: return null
+        val additionalConfig = configuration.additionalConfig ?: return null
 
-            val address = additionalConfig[DD_PROXY_ADDRESS] as? String
-            val port = (additionalConfig[DD_PROXY_PORT] as? Number)?.toInt()
-            val type = (additionalConfig[DD_PROXY_TYPE] as? String)?.let {
-                when (it.toLowerCase(Locale.US)) {
-                    "http", "https" -> Proxy.Type.HTTP
-                    "socks" -> Proxy.Type.SOCKS
-                    else -> {
-                        Log.w(
-                            BridgeSdk::class.java.canonicalName,
-                            "Unknown proxy type given: $it, skipping proxy configuration."
-                        )
-                        null
-                    }
+        val address = additionalConfig[DD_PROXY_ADDRESS] as? String
+        val port = (additionalConfig[DD_PROXY_PORT] as? Number)?.toInt()
+        val type = (additionalConfig[DD_PROXY_TYPE] as? String)?.let {
+            when (it.lowercase(Locale.US)) {
+                "http", "https" -> Proxy.Type.HTTP
+                "socks" -> Proxy.Type.SOCKS
+                else -> {
+                    Log.w(
+                        BridgeSdk::class.java.canonicalName,
+                        "Unknown proxy type given: $it, skipping proxy configuration."
+                    )
+                    null
                 }
             }
-
-            val proxy = if (address != null && port != null && type != null) {
-                Proxy(type, InetSocketAddress(address, port))
-            } else {
-                return null
-            }
-
-            val username = additionalConfig[DD_PROXY_USERNAME] as? String
-            val password = additionalConfig[DD_PROXY_PASSWORD] as? String
-
-            val authenticator = if (username != null && password != null) {
-                ProxyAuthenticator(username, password)
-            } else {
-                null
-            }
-
-            return Pair(proxy, authenticator)
         }
 
+        val proxy = if (address != null && port != null && type != null) {
+            Proxy(type, InetSocketAddress(address, port))
+        } else {
+            return null
+        }
+
+        val username = additionalConfig[DD_PROXY_USERNAME] as? String
+        val password = additionalConfig[DD_PROXY_PASSWORD] as? String
+
+        val authenticator = if (username != null && password != null) {
+            ProxyAuthenticator(username, password)
+        } else {
+            null
+        }
+
+        return Pair(proxy, authenticator)
+    }
+
     private fun buildSite(site: String?): DatadogSite {
-        val siteLower = site?.toLowerCase(Locale.US)
+        val siteLower = site?.lowercase(Locale.US)
         return when (siteLower) {
             "us1", "us" -> DatadogSite.US1
             "eu1", "eu" -> DatadogSite.EU1
