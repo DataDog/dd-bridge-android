@@ -50,6 +50,7 @@ interface DdRum {
     /**
      * Stop tracking a RUM Resource.
      */
+    @Suppress("LongParameterList")
     fun stopResource(
         key: String,
         statusCode: Long,

@@ -204,6 +204,7 @@ internal class BridgeRumTest {
     fun `M call stopResource W stopResource()`(
         @StringForgery key: String,
         @IntForgery(200, 600) statusCode: Int,
+        @LongForgery(min = 0L) resourceSize: Long,
         @Forgery kind: RumResourceKind
     ) {
         // Given
@@ -214,16 +215,47 @@ internal class BridgeRumTest {
             key,
             statusCode.toLong(),
             kind.toString(),
-            fakeTimestamp,
-            fakeContext
+            resourceSize,
+            fakeContext,
+            fakeTimestamp
         )
 
         // Then
-        verify(mockRumMonitor).stopResource(key, statusCode, null, kind, updatedContext)
+        verify(mockRumMonitor).stopResource(key, statusCode, resourceSize, kind, updatedContext)
     }
 
     @Test
     fun `M call stopResource W stopResource() with invalid kind`(
+        @StringForgery key: String,
+        @IntForgery(200, 600) statusCode: Int,
+        @LongForgery(min = 0L) resourceSize: Long,
+        @StringForgery(StringForgeryType.HEXADECIMAL) kind: String
+    ) {
+        // Given
+        val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
+
+        // When
+        testedDdRum.stopResource(
+            key,
+            statusCode.toLong(),
+            kind,
+            resourceSize,
+            fakeContext,
+            fakeTimestamp
+        )
+
+        // Then
+        verify(mockRumMonitor).stopResource(
+            key,
+            statusCode,
+            resourceSize,
+            RumResourceKind.UNKNOWN,
+            updatedContext
+        )
+    }
+
+    @Test
+    fun `M call stopResource W stopResource() with missing resource size`(
         @StringForgery key: String,
         @IntForgery(200, 600) statusCode: Int,
         @StringForgery(StringForgeryType.HEXADECIMAL) kind: String
@@ -236,8 +268,9 @@ internal class BridgeRumTest {
             key,
             statusCode.toLong(),
             kind,
-            fakeTimestamp,
-            fakeContext
+            -1,
+            fakeContext,
+            fakeTimestamp
         )
 
         // Then
