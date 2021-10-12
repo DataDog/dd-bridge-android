@@ -14,27 +14,27 @@ interface DdRum {
     /**
      * Start tracking a RUM View.
      */
-    fun startView(key: String, name: String, timestampMs: Long, context: Map<String, Any?>): Unit
+    fun startView(key: String, name: String, context: Map<String, Any?>, timestampMs: Long): Unit
 
     /**
      * Stop tracking a RUM View.
      */
-    fun stopView(key: String, timestampMs: Long, context: Map<String, Any?>): Unit
+    fun stopView(key: String, context: Map<String, Any?>, timestampMs: Long): Unit
 
     /**
      * Start tracking a RUM Action.
      */
-    fun startAction(type: String, name: String, timestampMs: Long, context: Map<String, Any?>): Unit
+    fun startAction(type: String, name: String, context: Map<String, Any?>, timestampMs: Long): Unit
 
     /**
      * Stop tracking the ongoing RUM Action.
      */
-    fun stopAction(timestampMs: Long, context: Map<String, Any?>): Unit
+    fun stopAction(context: Map<String, Any?>, timestampMs: Long): Unit
 
     /**
      * Add a RUM Action.
      */
-    fun addAction(type: String, name: String, timestampMs: Long, context: Map<String, Any?>): Unit
+    fun addAction(type: String, name: String, context: Map<String, Any?>, timestampMs: Long): Unit
 
     /**
      * Start tracking a RUM Resource.
@@ -43,8 +43,8 @@ interface DdRum {
         key: String,
         method: String,
         url: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ): Unit
 
     /**
@@ -54,8 +54,9 @@ interface DdRum {
         key: String,
         statusCode: Long,
         kind: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        size: Long,
+        context: Map<String, Any?>,
+        timestampMs: Long
     ): Unit
 
     /**
@@ -65,8 +66,8 @@ interface DdRum {
         message: String,
         source: String,
         stacktrace: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ): Unit
 
     /**

@@ -24,8 +24,8 @@ internal class BridgeTrace(
 
     override fun startSpan(
         operation: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ): String {
         val span = tracer.buildSpan(operation)
             .withStartTimestamp(TimeUnit.MILLISECONDS.toMicros(timestampMs))
@@ -41,8 +41,8 @@ internal class BridgeTrace(
 
     override fun finishSpan(
         spanId: String,
-        timestampMs: Long,
-        context: Map<String, Any?>
+        context: Map<String, Any?>,
+        timestampMs: Long
     ) {
         val span = spanMap.remove(spanId) ?: return
         span.setTags(context)
