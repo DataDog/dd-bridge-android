@@ -111,6 +111,12 @@ internal class BridgeSdk(
             configBuilder.trackLongTasks(longTask)
         }
 
+        val firstPartyHosts =
+            (configuration.additionalConfig?.get(DD_FIRST_PARTY_HOSTS) as? List<String>)
+        if (firstPartyHosts != null) {
+            configBuilder.setFirstPartyHosts(firstPartyHosts)
+        }
+
         buildProxyConfiguration(configuration)?.let { (proxy, authenticator) ->
             configBuilder.setProxy(proxy, authenticator)
         }
@@ -202,6 +208,7 @@ internal class BridgeSdk(
         internal const val DD_SDK_VERBOSITY = "_dd.sdk_verbosity"
         internal const val DD_SERVICE_NAME = "_dd.service_name"
         internal const val DD_LONG_TASK_THRESHOLD = "_dd.long_task.threshold"
+        internal const val DD_FIRST_PARTY_HOSTS = "_dd.first_party_hosts"
         internal const val DD_PROXY_ADDRESS = "_dd.proxy.address"
         internal const val DD_PROXY_PORT = "_dd.proxy.port"
         internal const val DD_PROXY_TYPE = "_dd.proxy.type"
