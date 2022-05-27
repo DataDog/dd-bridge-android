@@ -1204,6 +1204,37 @@ internal class BridgeSdkTest {
             }
     }
 
+    @Test
+    fun `𝕄 set first party hosts 𝕎 initialize() {first party hosts}`(
+        @Forgery configuration: DdSdkConfiguration,
+        forge: Forge
+    ) {
+        val firstPartyHosts = forge.aList { forge.aStringMatching("[a-z]+\\.[a-z]{3}") }
+
+        // Given
+        val bridgeConfiguration = configuration.copy(
+            additionalConfig = mapOf(
+                BridgeSdk.DD_FIRST_PARTY_HOSTS to firstPartyHosts
+            )
+        )
+        val configCaptor = argumentCaptor<Configuration>()
+
+        // When
+        testedBridgeSdk.initialize(bridgeConfiguration)
+
+        // Then
+        verify(mockDatadog).initialize(
+            same(mockContext),
+            any(),
+            configCaptor.capture(),
+            eq(configuration.trackingConsent.asTrackingConsent())
+        )
+        assertThat(configCaptor.firstValue)
+            .hasField("coreConfig") { coreConfig ->
+                coreConfig.hasFieldEqualTo("firstPartyHosts", firstPartyHosts)
+            }
+    }
+
     // endregion
 
     // region misc
