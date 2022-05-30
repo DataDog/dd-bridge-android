@@ -14,5 +14,5 @@ object AndroidConfig {
     const val MIN_SDK = 19
     const val BUILD_TOOLS_VERSION = "31.0.0"
 
-    val VERSION = Version(0, 5, 3)
+    val VERSION = Version(0, 5, 4)
 }
