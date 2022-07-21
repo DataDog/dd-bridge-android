@@ -33,7 +33,7 @@ kotlinGrammarParser = "c35b50fa44"
 jsonSchemaValidator = "1.12.1"
 
 # Datadog
-datadogSdk = "1.13.0"
+datadogSdk = "1.14.0-beta1"
 
 [libraries]
 
