@@ -12,7 +12,7 @@ interface com.datadog.android.bridge.DdRum
   fun startView(String, String, Map<String, Any?>, Long): Unit
   fun stopView(String, Map<String, Any?>, Long): Unit
   fun startAction(String, String, Map<String, Any?>, Long): Unit
-  fun stopAction(Map<String, Any?>, Long): Unit
+  fun stopAction(String, String, Map<String, Any?>, Long): Unit
   fun addAction(String, String, Map<String, Any?>, Long): Unit
   fun startResource(String, String, String, Map<String, Any?>, Long): Unit
   fun stopResource(String, Long, String, Long, Map<String, Any?>, Long): Unit

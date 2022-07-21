@@ -58,11 +58,18 @@ internal class BridgeRum : DdRum {
         )
     }
 
-    override fun stopAction(context: Map<String, Any?>, timestampMs: Long) {
+    override fun stopAction(
+        type: String,
+        name: String,
+        context: Map<String, Any?>,
+        timestampMs: Long
+    ) {
         val attributes = context.toMutableMap().apply {
             put(RumAttributes.INTERNAL_TIMESTAMP, timestampMs)
         }
         GlobalRum.get().stopUserAction(
+            type = type.asRumActionType(),
+            name = name,
             attributes = attributes
         )
     }
@@ -156,6 +163,7 @@ internal class BridgeRum : DdRum {
             "scroll" -> RumActionType.SCROLL
             "swipe" -> RumActionType.SWIPE
             "click" -> RumActionType.CLICK
+            "back" -> RumActionType.BACK
             else -> RumActionType.CUSTOM
         }
     }

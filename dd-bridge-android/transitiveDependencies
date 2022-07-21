@@ -1,6 +1,6 @@
 Dependencies List
 
-com.datadoghq:dd-sdk-android:1.13.0-rc1                         : 1524 Kb
+com.datadoghq:dd-sdk-android:1.14.0-beta1                       : 1582 Kb
 com.squareup.okhttp3:okhttp:3.12.13                             :  417 Kb
 com.squareup.okio:okio:1.15.0                                   :   86 Kb
 io.opentracing:opentracing-api:0.32.0                           :   18 Kb

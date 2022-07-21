@@ -158,7 +158,7 @@ internal class BridgeRumTest {
     }
 
     @Test
-    fun `M call startAction W startAction() with invalid typ`(
+    fun `M call startAction W startAction() with invalid type`(
         @StringForgery name: String,
         @StringForgery(StringForgeryType.HEXADECIMAL) type: String
     ) {
@@ -173,15 +173,33 @@ internal class BridgeRumTest {
     }
 
     @Test
-    fun `M call stopAction W stopAction()`() {
+    fun `M call stopAction W stopAction()`(
+        @Forgery type: RumActionType,
+        @StringForgery name: String
+    ) {
         // Given
         val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
 
         // When
-        testedDdRum.stopAction(fakeContext, fakeTimestamp)
+        testedDdRum.stopAction(type.name, name, fakeContext, fakeTimestamp)
 
         // Then
-        verify(mockRumMonitor).stopUserAction(updatedContext)
+        verify(mockRumMonitor).stopUserAction(type, name, updatedContext)
+    }
+
+    @Test
+    fun `M call stopAction W stopAction() with invalid type`(
+        @StringForgery name: String,
+        @StringForgery(StringForgeryType.HEXADECIMAL) type: String
+    ) {
+        // Given
+        val updatedContext = fakeContext + (RumAttributes.INTERNAL_TIMESTAMP to fakeTimestamp)
+
+        // When
+        testedDdRum.stopAction(type, name, fakeContext, fakeTimestamp)
+
+        // Then
+        verify(mockRumMonitor).stopUserAction(RumActionType.CUSTOM, name, updatedContext)
     }
 
     @Test
