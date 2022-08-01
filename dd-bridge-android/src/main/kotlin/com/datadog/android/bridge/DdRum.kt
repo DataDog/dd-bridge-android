@@ -29,7 +29,7 @@ interface DdRum {
     /**
      * Stop tracking the ongoing RUM Action.
      */
-    fun stopAction(context: Map<String, Any?>, timestampMs: Long): Unit
+    fun stopAction(type: String, name: String, context: Map<String, Any?>, timestampMs: Long): Unit
 
     /**
      * Add a RUM Action.
